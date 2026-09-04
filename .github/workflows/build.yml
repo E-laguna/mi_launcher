@@ -14,22 +14,14 @@ jobs:
       - name: Descargar código
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
+      - name: Generar APK desde PWA
+        uses: pwa-builder/pwa-action@v1.0.1
         with:
-          node-version: 18
+          pwa-url: 'https://raw.githack.com/E-laguna/mi_launcher/main/index.html'
+          output-type: 'apk'
 
-      - name: Instalación de Bubblewrap CLI
-        run: npm install -g @bubblewrap/cli
-
-      - name: Generar APK mediante PWABuilder / Bubblewrap
-        run: |
-          npx @bubblewrap/cli init --manifest=manifest.json --directory=android-app
-          cd android-app
-          npx @bubblewrap/cli build
-
-      - name: Guardar APK generado
+      - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
           name: MiLauncher-APK
-          path: android-app/*.apk
+          path: '*.apk'
