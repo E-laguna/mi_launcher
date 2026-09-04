@@ -1,14 +1,14 @@
 {
   "name": "Mi Launcher Minimalista",
   "short_name": "Launcher",
-  "description": "Launcher minimalista para ahorro de batería",
+  "description": "Launcher minimalista para ahorro de bateria",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "https://via.placeholder.com/512.png",
+      "src": "https://raw.githubusercontent.com/pwa-builder/pwabuilder-test-pwa/main/public/images/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
