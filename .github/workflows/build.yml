@@ -1,0 +1,35 @@
+name: Compilar APK Android
+
+on:
+  push:
+    branches:
+      - main
+      - Principal
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Instalación de Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Generar APK mediante PWABuilder / Bubblewrap
+        run: |
+          npx @bubblewrap/cli init --manifest=manifest.json --directory=android-app
+          cd android-app
+          npx @bubblewrap/cli build
+
+      - name: Guardar APK generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: MiLauncher-APK
+          path: android-app/*.apk
