@@ -1,0 +1,2807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Coach Laguna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F4FB;
+  --surface:#FFFFFF;
+  --surface-2:#F1EDFA;
+  --line:#E6E0F2;
+  --accent:#8E7CC3;
+  --accent-dim:#C9BEEA;
+  --accent-2:#7FB69E;
+  --accent-2-dark:#4F8B6E;
+  --danger:#C75C6B;
+  --text:#2E2A3D;
+  --muted:#79738C;
+  --shadow:rgba(107,91,149,.12);
+  --radius:16px;
+  --nav-h:64px;
+  /* Algunos WebView usados para empacar la app (ej. htmltoapk) no reportan bien
+     las zonas seguras del celular, así que forzamos un mínimo fijo además del
+     valor real del sistema, para que la barra de estado y la barra de navegación
+     del teléfono nunca tapen los botones. */
+  --safe-b:max(22px, env(safe-area-inset-bottom,0px));
+  --safe-t:max(26px, env(safe-area-inset-top,0px));
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;overscroll-behavior-y:none;}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(480px 300px at 100% -10%, rgba(142,124,195,.14), transparent),
+    radial-gradient(420px 260px at -10% 30%, rgba(127,182,158,.10), transparent);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+}
+h1,h2,h3,.display{font-family:'Fraunces',serif; font-weight:600;}
+button{font-family:inherit;}
+#app-shell{
+  max-width:520px;
+  margin:0 auto;
+  width:100%;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  background:transparent;
+}
+header.topbar{
+  position:sticky; top:0; z-index:20;
+  padding:calc(14px + var(--safe-t)) 18px 12px;
+  display:flex; align-items:center; gap:10px;
+  background:linear-gradient(180deg, var(--bg) 78%, rgba(246,244,251,0));
+}
+header.topbar .back-btn{
+  width:36px;height:36px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface); color:var(--text); font-size:16px;
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;cursor:pointer;
+  box-shadow:0 2px 8px var(--shadow);
+}
+header.topbar h1{
+  font-size:20px; margin:0; font-weight:600; letter-spacing:.1px; flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+header.topbar .top-action{
+  border:1px solid var(--line); background:var(--surface); color:var(--accent);
+  border-radius:10px; padding:8px 12px; font-size:13px; font-weight:700; cursor:pointer;
+  box-shadow:0 2px 8px var(--shadow);
+}
+main#view{
+  flex:1;
+  padding:4px 18px calc(var(--nav-h) + 28px + var(--safe-b));
+  overflow-y:auto;
+}
+nav.bottom-nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:30;
+  max-width:520px; margin:0 auto;
+  display:flex; background:var(--surface);
+  border-top:1px solid var(--line);
+  padding-bottom:var(--safe-b);
+  padding-top:2px;
+  box-shadow:0 -4px 16px var(--shadow);
+}
+nav.bottom-nav button{
+  flex:1; background:none; border:none; color:var(--muted);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:9px 2px 8px; font-size:10.5px; cursor:pointer; font-weight:700;
+}
+nav.bottom-nav button .ic{font-size:19px; line-height:1;}
+nav.bottom-nav button.active{color:var(--accent);}
+nav.bottom-nav button.active .ic{filter:drop-shadow(0 0 6px rgba(142,124,195,.45));}
+
+.section-tabs{display:flex; gap:6px; margin:10px 0 16px; overflow-x:auto; padding-bottom:2px;}
+.section-tabs button{
+  flex:0 0 auto; background:var(--surface); color:var(--muted); border:1px solid var(--line);
+  padding:8px 14px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap;
+}
+.section-tabs button.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px; box-shadow:0 3px 10px var(--shadow);}
+.card + .card{margin-top:10px;}
+.list{display:flex;flex-direction:column;gap:9px;}
+.row{display:flex; align-items:center; gap:10px;}
+.row-between{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+
+.habit-row{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 3px 10px var(--shadow);}
+.habit-row .habit-name{flex:1; font-size:14.5px; font-weight:600; overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.toggle{width:44px; height:26px; border-radius:999px; background:var(--bg); border:1px solid var(--line); position:relative; cursor:pointer; flex:0 0 auto;}
+.toggle .knob{position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--muted); transition:.18s;}
+.toggle.on{background:var(--accent-2); border-color:var(--accent-2);}
+.toggle.on .knob{left:20px; background:#fff;}
+.icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line); background:var(--surface); color:var(--muted); display:flex;align-items:center;justify-content:center; cursor:pointer; flex:0 0 auto; font-size:14px;}
+.icon-btn.danger{color:var(--danger);}
+
+.inline-add{display:flex; gap:8px; margin-top:4px;}
+input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{
+  width:100%; background:var(--surface); border:1px solid var(--line); color:var(--text);
+  border-radius:10px; padding:11px 12px; font-size:14px; font-family:inherit;
+}
+textarea{resize:vertical; min-height:90px; line-height:1.5;}
+label.field-label{display:block; font-size:11.5px; color:var(--muted); margin:12px 0 5px; font-weight:700;}
+label.field-label:first-child{margin-top:0;}
+.btn{
+  border:none; border-radius:11px; padding:12px 16px; font-weight:700; font-size:14px; cursor:pointer;
+}
+.btn-primary{background:var(--accent); color:#fff; box-shadow:0 6px 16px var(--shadow);}
+.btn-primary:active{transform:scale(.98);}
+.btn-ghost{background:var(--surface); color:var(--text); border:1px solid var(--line);}
+.btn-danger{background:rgba(199,92,107,.12); color:var(--danger); border:1px solid rgba(199,92,107,.35);}
+.btn-block{width:100%;}
+.pill{display:inline-block; padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:700; background:var(--surface-2); border:1px solid var(--line); color:var(--muted);}
+.pill.accent{background:var(--surface-2); color:var(--accent); border-color:var(--accent-dim);}
+.pill.teal{background:rgba(127,182,158,.16); color:var(--accent-2-dark); border-color:rgba(127,182,158,.4);}
+.muted{color:var(--muted);}
+.empty-state{text-align:center; padding:38px 12px; color:var(--muted);}
+.empty-state .ic{font-size:34px; display:block; margin-bottom:10px;}
+.empty-state .btn{margin-top:14px;}
+
+/* calendar */
+.cal-wrap{width:100%;}
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+.cal-head .cal-title{font-weight:700; font-size:14.5px; text-transform:capitalize; font-family:'Fraunces',serif;}
+.cal-nav-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line); background:var(--surface); color:var(--text); cursor:pointer;}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; width:100%;}
+.cal-dow{text-align:center; font-size:10px; color:var(--muted); font-weight:700; padding-bottom:2px;}
+.cal-day{position:relative; aspect-ratio:1/1; width:100%; border-radius:50%; border:1px solid var(--line);
+  background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--text); cursor:pointer;}
+.cal-day.empty{visibility:hidden; cursor:default;}
+.cal-day.today{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset;}
+.cal-day.done{background:var(--accent-2); color:#fff; border-color:var(--accent-2);}
+.cal-day.missed{background:rgba(199,92,107,.12); border-color:rgba(199,92,107,.35); color:var(--danger);}
+.cal-day .dot{position:absolute; bottom:3px; width:4px; height:4px; border-radius:50%; background:var(--accent);}
+.cal-day.future{opacity:.4; cursor:default;}
+
+.stats-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px;}
+.stat-box{background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:10px 6px; text-align:center; box-shadow:0 3px 10px var(--shadow);}
+.stat-box .num{font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--accent);}
+.stat-box .lbl{font-size:9.5px; color:var(--muted); margin-top:2px; font-weight:700;}
+
+/* day switcher */
+.day-switch{display:flex; align-items:center; justify-content:space-between; margin:6px 0 14px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:6px; box-shadow:0 3px 10px var(--shadow);}
+.day-switch button{background:none; border:none; color:var(--text); width:34px; height:34px; border-radius:8px; font-size:16px; cursor:pointer;}
+.day-switch .day-label{flex:1; text-align:center; font-weight:700; font-size:13.5px; text-transform:capitalize;}
+.day-switch .today-btn{font-size:10.5px; color:var(--accent); font-weight:700; background:var(--surface-2); border-radius:8px; padding:5px 9px; width:auto;}
+
+/* exercise cards */
+.ex-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.ex-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; cursor:pointer; box-shadow:0 3px 10px var(--shadow);}
+.ex-card .ex-photo{width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--surface-2); display:block;}
+.ex-card .ex-photo.ph-empty{display:flex; align-items:center; justify-content:center; font-size:26px; color:var(--muted);}
+.ex-card .ex-body{padding:9px 10px 11px;}
+.ex-card .ex-name{font-size:12.5px; font-weight:700; margin-bottom:5px; line-height:1.25;}
+
+.app-card{position:relative; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 3px 10px var(--shadow);}
+.app-card .app-open{width:100%; background:none; border:none; padding:16px 8px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;}
+.app-card .app-emoji{font-size:28px;}
+.app-card .app-name{font-size:12px; font-weight:700; text-align:center; color:var(--text); line-height:1.2;}
+.app-card .app-del{position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; border:1px solid var(--line); background:var(--surface); color:var(--danger); font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+.filters-row{display:flex; gap:7px; overflow-x:auto; padding-bottom:2px; margin-bottom:12px;}
+.filters-row select{width:auto; padding:8px 10px; font-size:12px; flex:0 0 auto;}
+
+.checkline{display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:0 3px 10px var(--shadow);}
+.checkline input[type=checkbox]{width:19px;height:19px; accent-color:var(--accent); flex:0 0 auto;}
+.checkline .txt{flex:1; font-size:14px;}
+.checkline .txt.done{text-decoration:line-through; color:var(--muted);}
+.checkline.picked{border-color:var(--accent-dim); background:var(--surface-2);}
+
+/* notas (tarjetas) */
+.notes-grid{display:flex; flex-direction:column; gap:8px;}
+.note-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:11px 13px; cursor:pointer; display:flex; align-items:center; gap:11px; box-shadow:0 3px 10px var(--shadow);}
+.note-card:active{transform:scale(.98);}
+.note-card .note-time{flex:0 0 auto; min-width:42px; font-size:10.5px; font-weight:700; color:var(--accent);}
+.note-card .note-preview{flex:1; min-width:0; font-size:13.5px; color:var(--text); overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.note-card .note-arrow{flex:0 0 auto; color:var(--muted); font-size:13px;}
+
+/* modal */
+#modal-overlay{
+  position:fixed; inset:0; background:rgba(46,42,61,.55); z-index:100;
+  display:none; align-items:flex-end; justify-content:center;
+}
+#modal-overlay.open{display:flex;}
+.modal-sheet{
+  background:var(--bg); border:1px solid var(--line); border-radius:20px 20px 0 0;
+  width:100%; max-width:520px; max-height:88dvh; overflow-y:auto; padding:18px 18px calc(22px + var(--safe-b));
+  animation:slideUp .22s ease;
+  box-shadow:0 -8px 24px var(--shadow);
+}
+@keyframes slideUp{from{transform:translateY(24px); opacity:.4;} to{transform:translateY(0); opacity:1;}}
+.modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.modal-head h2{font-size:18px; margin:0; font-weight:600; font-family:'Fraunces',serif;}
+.modal-close{width:30px;height:30px;border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:14px; cursor:pointer;}
+.modal-actions{display:flex; gap:8px; margin-top:18px;}
+
+.photo-drop{width:100%; aspect-ratio:16/10; border:1.5px dashed var(--line); border-radius:14px; background:var(--surface-2);
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; color:var(--muted); font-size:12.5px; cursor:pointer; overflow:hidden; position:relative;}
+.photo-drop img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.chip-row{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+.chip{padding:6px 11px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); font-size:12px; color:var(--muted); cursor:pointer; font-weight:700;}
+.chip.on{background:var(--accent); color:#fff; border-color:var(--accent);}
+.seg{display:flex; background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:3px;}
+.seg button{flex:1; border:none; background:none; color:var(--muted); padding:9px 0; border-radius:8px; font-weight:700; font-size:12.5px; cursor:pointer;}
+.seg button.on{background:var(--accent); color:#fff;}
+
+.fab{
+  position:fixed; z-index:25; right:calc(50% - 260px + 18px); bottom:calc(var(--nav-h) + 20px + var(--safe-b));
+  width:52px; height:52px; border-radius:50%; background:var(--accent); color:#fff; border:none;
+  font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  box-shadow:0 6px 20px rgba(142,124,195,.4);
+}
+.fab:active{transform:scale(.96);}
+@media (max-width:520px){ .fab{right:18px;} }
+
+.upcoming-item{display:flex; align-items:center; gap:11px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:11px 12px; box-shadow:0 3px 10px var(--shadow);}
+.upcoming-item .badge-days{flex:0 0 auto; width:44px; height:44px; border-radius:11px; background:var(--surface-2); display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.upcoming-item .badge-days .n{font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--accent);}
+.upcoming-item .badge-days .u{font-size:8px; color:var(--muted); font-weight:700;}
+.upcoming-item .info{flex:1; min-width:0;}
+.upcoming-item .info .t{font-size:13.5px; font-weight:700; overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.upcoming-item .info .s{font-size:11.5px; color:var(--muted); margin-top:1px;}
+
+.section-title{font-size:21px; font-weight:600; margin:2px 0 4px; font-family:'Fraunces',serif;}
+.section-sub{color:var(--muted); font-size:13px; margin:0 0 14px;}
+.divider{height:1px; background:var(--line); margin:16px 0;}
+.hint{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.5;}
+.timer-big{font-family:'Fraunces',serif; font-size:52px; font-weight:600; text-align:center; color:var(--accent); margin:14px 0 4px;}
+
+/* ===== pills extra ===== */
+.pill.orange{background:rgba(224,142,69,.15); color:#B4661C; border-color:rgba(224,142,69,.4);}
+.pill.purple{background:rgba(142,124,195,.15); color:var(--accent); border-color:var(--accent-dim);}
+
+/* ===== cancha / tiro ===== */
+.court-wrap{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px; box-shadow:0 3px 10px var(--shadow);}
+.court-svg{width:100%; height:auto; display:block; touch-action:manipulation;}
+.court-svg.interactive{cursor:crosshair;}
+.tiro-toggle{display:flex; gap:8px; margin:12px 0;}
+.tiro-toggle button{flex:1; border:2px solid transparent; border-radius:11px; padding:12px 0; font-weight:700; font-size:13px; cursor:pointer;}
+.tiro-toggle button.make{background:rgba(127,182,158,.14); color:var(--accent-2-dark);}
+.tiro-toggle button.make.on{background:var(--accent-2); color:#fff;}
+.tiro-toggle button.miss{background:rgba(199,92,107,.12); color:var(--danger);}
+.tiro-toggle button.miss.on{background:var(--danger); color:#fff;}
+.tiro-stats{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px;}
+.tiro-actions{display:flex; gap:8px; margin-top:12px;}
+.tiro-actions .btn{flex:1;}
+.sesion-item{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:11px 12px; box-shadow:0 3px 10px var(--shadow); cursor:pointer;}
+
+/* ===== flyers / niveles (estilo darebee) ===== */
+.flyer-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.flyer-card{position:relative; border-radius:var(--radius); overflow:hidden; aspect-ratio:3/4; cursor:pointer; box-shadow:0 3px 10px var(--shadow); border:2px solid transparent; background:var(--surface-2);}
+.flyer-card.sel{border-color:var(--accent);}
+.flyer-card img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.flyer-card .flyer-noimg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:34px; background:linear-gradient(160deg,var(--accent-dim),var(--surface-2)); color:#fff;}
+.flyer-card .flyer-overlay{position:absolute; left:0; right:0; bottom:0; padding:22px 9px 8px; background:linear-gradient(0deg,rgba(20,16,30,.82),transparent); color:#fff;}
+.flyer-card .flyer-name{font-size:12px; font-weight:700; line-height:1.22;}
+.flyer-card .flyer-check{position:absolute; top:7px; right:7px; width:23px;height:23px;border-radius:50%; background:rgba(255,255,255,.92); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--accent); font-weight:900;}
+.circuito-item{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:9px 10px; box-shadow:0 3px 10px var(--shadow);}
+.circuito-item .ci-name{flex:1; font-size:13px; font-weight:700;}
+.circuito-item input[type=number]{width:64px; flex:0 0 auto; padding:8px;}
+.lvl-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+.lvl-grid button{aspect-ratio:1/1; border-radius:10px; border:1px solid var(--line); background:var(--surface); font-weight:700; font-size:13px; cursor:pointer; font-family:'Fraunces',serif;}
+.lvl-grid button.on{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+/* ===== entrenar ===== */
+.stopwatch-face{text-align:center; padding:18px 0 6px;}
+.stopwatch-face .sw-time{font-family:'Fraunces',serif; font-size:52px; font-weight:600; color:var(--accent);}
+.sw-controls{display:flex; gap:8px; margin-top:10px;}
+.sw-controls .btn{flex:1;}
+.surprise-card{background:linear-gradient(160deg,var(--accent),var(--accent-2)); border-radius:var(--radius); padding:26px 18px; text-align:center; color:#fff; box-shadow:0 8px 22px var(--shadow);}
+.surprise-card .sc-name{font-family:'Fraunces',serif; font-size:25px; font-weight:700; margin:8px 0 2px; line-height:1.15;}
+.surprise-card .sc-val{font-size:14.5px; font-weight:700; opacity:.95;}
+.player-step{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px; text-align:center; box-shadow:0 3px 10px var(--shadow);}
+.player-step .ps-label{font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+.player-step .ps-name{font-family:'Fraunces',serif; font-size:24px; font-weight:600; margin:6px 0;}
+.player-step .ps-big{font-family:'Fraunces',serif; font-size:44px; font-weight:600; color:var(--accent);}
+.player-progress{height:5px; background:var(--surface-2); border-radius:99px; overflow:hidden; margin-top:12px;}
+.player-progress i{display:block; height:100%; background:var(--accent-2);}
+
+/* ===== extractor desde PDF ===== */
+.pdf-toolbar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0;}
+.pdf-canvas-wrap{position:relative; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius); overflow:auto; max-height:52vh; display:flex; justify-content:center; touch-action:pan-y;}
+.pdf-canvas-wrap.cropping{touch-action:none;}
+#pdf-canvas{display:block;}
+#pdf-overlay{position:absolute; left:50%; transform:translateX(-50%); top:0; cursor:crosshair;}
+.pdf-actions-row{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;}
+.pdf-actions-row .btn{flex:1 1 auto; padding:10px 12px; font-size:12.5px;}
+.icon-btn:disabled{opacity:.35; cursor:default;}
+</style>
+</head>
+<body>
+<div id="app-shell">
+  <header class="topbar" id="topbar"></header>
+  <main id="view"></main>
+  <button class="fab" id="fab" style="display:none;">+</button>
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+<div id="modal-overlay"><div class="modal-sheet" id="modal-sheet"></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+/* ============ storage layer ============ */
+const HAS_CLOUD = (typeof window.storage !== 'undefined' && window.storage !== null);
+async function saveData(key, value){
+  const json = JSON.stringify(value);
+  if(HAS_CLOUD){
+    try{ await window.storage.set(key, json, false); return; }catch(e){ console.warn('cloud save fallo', key, e); }
+  }
+  try{ localStorage.setItem('cl_'+key, json); }catch(e){ console.warn('local save fallo', key, e); }
+}
+async function loadData(key, fallback){
+  if(HAS_CLOUD){
+    try{ const r = await window.storage.get(key, false); return r ? JSON.parse(r.value) : fallback; }
+    catch(e){ return fallback; }
+  }
+  try{ const v = localStorage.getItem('cl_'+key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayStr(){ return fmtDate(new Date()); }
+function fmtDate(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function addDays(dateStr, n){ const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return fmtDate(d); }
+const DOW = ['dom','lun','mar','mié','jué','vie','sáb'];
+const DOW_L = ['L','M','M','J','V','S','D'];
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function humanDate(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  return `${DOW[d.getDay()]}, ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============ estado global ============ */
+const DB = {
+  habitos: [],           // {id,nombre,historial:{fecha:true}}
+  notas: {},             // fecha: [{id,texto,hora}]
+  tareas: {},            // fecha: [{id,texto,hecho}]
+  ejercicios: [],        // {id,foto,nombre,categoria,subcategoria,nivel,tipo,rangoReps,series,valor,descansoSerie,descansoFinal,implementos:[],notas}
+  rutinas: [],           // {id,nombre,tipo,items:[{id,series,valor,tipo,descansoSerie,descansoFinal}],nivel,nivelVueltas,createdAt}
+  tiroSesiones: [],      // {id,fecha,tiros:[{x,y,made,zona}],createdAt}
+  contCalendario: {},    // fecha: texto idea
+  contIdeas: [],         // {id,titulo,descripcion,estado}
+  contTemas: [],         // {id,tema,tipo,descripcion,estado,fechaPlan}
+  contRutinasVideo: [],  // {id,nombre,items:[...],createdAt}
+  trabajoTurnos: [],     // {id,fecha,horas,ingresos,propinas,viajes,plataforma,gasolina,km,notas}
+  trabajoMeta: {diaria:'', semanal:'', mensual:''},
+  trabajoMant: [],       // {id,item,kmObjetivo,hecho,notas}  (recordatorios por kilometraje)
+  trabajoMantChecklist: {diario:[], semanal:[], mensual:[]}, // {id,texto,lastDone}
+  trabajoRegistro: {},   // fecha: {gasolina,km,sonidoRaro,notaSonido,zonaPeligrosa,notas}
+  relPersonas: [],       // {id,nombre,relacion,cumple,telefono,direccion,notas}
+  relFechas: [],         // {id,titulo,fecha,tipo}
+  relDescansos: [],      // {id,fecha,fechaFin,motivo,notas}
+  apps: [],              // {id,nombre,emoji,url} — lista de apps para abrir desde el launcher
+  appsLock: {inicio:'08:00', fin:'22:00'} // ventana en la que no se puede editar la lista de apps
+};
+const STORE_KEYS = {
+  habitos:'personal-habitos', notas:'personal-notas', tareas:'personal-tareas',
+  ejercicios:'atleta-ejercicios', rutinas:'atleta-rutinas', tiroSesiones:'atleta-tiro-sesiones',
+  contCalendario:'contenido-calendario', contIdeas:'contenido-ideas', contTemas:'contenido-temas', contRutinasVideo:'contenido-rutinas-video',
+  trabajoTurnos:'trabajo-turnos', trabajoMeta:'trabajo-meta', trabajoMant:'trabajo-mantenimiento',
+  trabajoMantChecklist:'trabajo-mant-checklist', trabajoRegistro:'trabajo-registro',
+  relPersonas:'relaciones-personas', relFechas:'relaciones-fechas', relDescansos:'relaciones-descansos',
+  apps:'apps-lista', appsLock:'apps-lock'
+};
+const DEFAULT_MANT_CHECKLIST = {
+  diario:[
+    {texto:'Revisar cadena (tensión y lubricación)'},
+    {texto:'Luces delanteras, traseras y direccionales'},
+    {texto:'Frenos (sensación de palanca y pedal)'},
+    {texto:'Presión de llantas (revisión visual)'},
+    {texto:'Espejos y claxon'}
+  ],
+  semanal:[
+    {texto:'Lavado de la moto'},
+    {texto:'Limpieza y engrase de cadena'},
+    {texto:'Presión de llantas con medidor'},
+    {texto:'Niveles de líquidos (frenos, refrigerante)'}
+  ],
+  mensual:[
+    {texto:'Cambio o revisión de aceite'},
+    {texto:'Pastillas de freno'},
+    {texto:'Batería (bornes y carga)'},
+    {texto:'Filtro de aire'},
+    {texto:'Ajuste/holgura de cadena'},
+    {texto:'Revisión general con mecánico'}
+  ]
+};
+function DEFAULTS_FN(){ return {
+  habitos:[], notas:{}, tareas:{}, ejercicios:[], rutinas:[], tiroSesiones:[], contCalendario:{}, contIdeas:[], contTemas:[], contRutinasVideo:[],
+  trabajoTurnos:[], trabajoMeta:{diaria:'',semanal:'',mensual:''}, trabajoMant:[],
+  trabajoMantChecklist:{
+    diario: DEFAULT_MANT_CHECKLIST.diario.map(i=>({id:uid(), lastDone:'', ...i})),
+    semanal: DEFAULT_MANT_CHECKLIST.semanal.map(i=>({id:uid(), lastDone:'', ...i})),
+    mensual: DEFAULT_MANT_CHECKLIST.mensual.map(i=>({id:uid(), lastDone:'', ...i}))
+  },
+  trabajoRegistro:{}, relPersonas:[], relFechas:[], relDescansos:[], apps:[], appsLock:{inicio:'08:00', fin:'22:00'}
+};}
+const DEFAULTS = DEFAULTS_FN();
+let dbReady = false;
+async function loadAll(){
+  const entries = Object.entries(STORE_KEYS);
+  await Promise.all(entries.map(async ([k,storeKey])=>{
+    DB[k] = await loadData(storeKey, DEFAULTS[k]);
+  }));
+  // migración: notas antiguas guardaban un solo texto por fecha (string).
+  // Las convertimos a arreglo de notas individuales para no perder nada.
+  Object.keys(DB.notas||{}).forEach(fecha=>{
+    const v = DB.notas[fecha];
+    if(typeof v === 'string'){
+      DB.notas[fecha] = v.trim() ? [{id:uid(), texto:v, hora:''}] : [];
+    }
+  });
+  // migración: rutinas antiguas guardaban ejercicioIds:[] plano -> las convertimos a items con series/valor de la biblioteca.
+  (DB.rutinas||[]).forEach(r=>{
+    if(!r.items && r.ejercicioIds){
+      r.items = r.ejercicioIds.map(id=>{
+        const e = DB.ejercicios.find(x=>x.id===id);
+        return e ? {id:e.id, tipo:e.tipo, series:e.series, valor:e.valor, descansoSerie:e.descansoSerie, descansoFinal:e.descansoFinal} : null;
+      }).filter(Boolean);
+      delete r.ejercicioIds;
+    }
+  });
+  // migración: checklist de mantenimiento vacío -> cargar valores por defecto.
+  if(DB.trabajoMantChecklist && !DB.trabajoMantChecklist.diario && !DB.trabajoMantChecklist.semanal && !DB.trabajoMantChecklist.mensual){
+    DB.trabajoMantChecklist = DEFAULTS_FN().trabajoMantChecklist;
+  }
+  ['diario','semanal','mensual'].forEach(f=>{ if(!DB.trabajoMantChecklist[f]) DB.trabajoMantChecklist[f]=[]; });
+  if(!DB.trabajoMeta) DB.trabajoMeta = {diaria:'',semanal:'',mensual:''};
+  if(DB.trabajoMeta.diaria===undefined) DB.trabajoMeta.diaria='';
+  dbReady = true;
+}
+async function persist(key){
+  await saveData(STORE_KEYS[key], DB[key]);
+}
+
+/* ============ navegación / historial (para botón atrás en la apk) ============ */
+const SECTIONS = [
+  {id:'personal', label:'Personal', icon:'🗓️'},
+  {id:'atleta', label:'Atleta', icon:'🏋️'},
+  {id:'contenido', label:'Contenido', icon:'🎬'},
+  {id:'trabajo', label:'Trabajo', icon:'🚕'},
+  {id:'relaciones', label:'Relaciones', icon:'❤️'},
+  {id:'apps', label:'Apps', icon:'📱'}
+];
+let state = {section:'personal', sub:'habitos', extra:null};
+
+function pushState(newState, replace){
+  state = Object.assign({}, newState);
+  const url = '#'+state.section+(state.sub?'/'+state.sub:'');
+  if(replace) history.replaceState(state, '', url);
+  else history.pushState(state, '', url);
+  render();
+}
+function goto(section, sub, extra){
+  pushState({section, sub: sub||defaultSub(section), extra: extra||null}, false);
+}
+function defaultSub(section){
+  return {personal:'habitos', atleta:'biblioteca', contenido:'calendario', trabajo:'resumen', relaciones:'proximos', apps:'lista'}[section];
+}
+window.addEventListener('popstate', (e)=>{
+  if(modalStack.length){ closeModalImmediate(); }
+  state = e.state || {section:'personal', sub:'habitos', extra:null};
+  render();
+});
+
+/* ============ modal (con soporte de botón atrás) ============ */
+let modalStack = [];
+function openModal(title, bodyHtml, opts){
+  opts = opts || {};
+  history.pushState(Object.assign({}, state, {modal:true, ts:Date.now()}), '');
+  modalStack.push(true);
+  const sheet = document.getElementById('modal-sheet');
+  sheet.innerHTML = `
+    <div class="modal-head"><h2>${title}</h2><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div id="modal-body">${bodyHtml}</div>
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+  fitModalToViewport();
+  if(opts.afterRender) opts.afterRender();
+}
+function closeModal(){
+  if(modalStack.length){ history.back(); }
+  else closeModalImmediate();
+}
+function closeModalImmediate(){
+  modalStack = [];
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('modal-sheet').innerHTML = '';
+}
+
+/* ---- que el teclado no tape lo que estás llenando en un modal ---- */
+function fitModalToViewport(){
+  const overlay = document.getElementById('modal-overlay');
+  if(!overlay || !overlay.classList.contains('open')) return;
+  const vv = window.visualViewport;
+  const h = vv ? vv.height : window.innerHeight;
+  overlay.style.height = h + 'px';
+  const sheet = document.getElementById('modal-sheet');
+  if(sheet) sheet.style.maxHeight = Math.round(h*0.92) + 'px';
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', fitModalToViewport);
+  window.visualViewport.addEventListener('scroll', fitModalToViewport);
+}
+window.addEventListener('resize', fitModalToViewport);
+document.getElementById('modal-overlay').addEventListener('focusin', (e)=>{
+  if(e.target && e.target.matches('input,textarea,select')){
+    fitModalToViewport();
+    setTimeout(()=>{ e.target.scrollIntoView({block:'center', behavior:'smooth'}); }, 250);
+  }
+});
+
+/* ============ helpers de formulario genérico ============ */
+function fieldHtml(f, val){
+  val = (val===undefined || val===null) ? '' : val;
+  const id = 'f_'+f.key;
+  if(f.type==='textarea'){
+    return `<label class="field-label">${f.label}</label><textarea id="${id}" placeholder="${f.ph||''}">${escapeHtml(val)}</textarea>`;
+  }
+  if(f.type==='select'){
+    const opts = f.options.map(o=>`<option value="${o.v}" ${String(val)===String(o.v)?'selected':''}>${o.l}</option>`).join('');
+    return `<label class="field-label">${f.label}</label><select id="${id}">${opts}</select>`;
+  }
+  if(f.type==='date'){
+    return `<label class="field-label">${f.label}</label><input type="date" id="${id}" value="${val}">`;
+  }
+  if(f.type==='number'){
+    return `<label class="field-label">${f.label}</label><input type="number" id="${id}" placeholder="${f.ph||''}" value="${val}" step="any">`;
+  }
+  return `<label class="field-label">${f.label}</label><input type="text" id="${id}" placeholder="${f.ph||''}" value="${escapeHtml(val)}">`;
+}
+function readFields(fields){
+  const out = {};
+  fields.forEach(f=>{
+    const el = document.getElementById('f_'+f.key);
+    if(!el) return;
+    out[f.key] = f.type==='number' ? (el.value===''? '': Number(el.value)) : el.value;
+  });
+  return out;
+}
+
+/* ============ generic CRUD entity screen ============ */
+function entityForm(fields, data, onSave, extraHtml){
+  return `
+    ${extraHtml||''}
+    ${fields.map(f=>fieldHtml(f, data[f.key])).join('')}
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary btn-block" id="save-entity-btn">Guardar</button>
+    </div>
+  `;
+}
+function openEntityModal(title, fields, data, onSave){
+  openModal(title, entityForm(fields, data, onSave), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = ()=>{
+        const vals = readFields(fields);
+        onSave(Object.assign({}, data, vals));
+        closeModal();
+      };
+    }
+  });
+}
+
+/* ============ calendario reutilizable ============ */
+// state.calMonth guardado por vista: {year,month}
+function monthGridHtml(year, month, opts){
+  opts = opts || {};
+  const first = new Date(year, month, 1);
+  const startOffset = (first.getDay()+6)%7; // lunes=0
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const cells = [];
+  for(let i=0;i<startOffset;i++) cells.push(null);
+  for(let d=1; d<=daysInMonth; d++) cells.push(d);
+  const today = todayStr();
+  let html = `<div class="cal-head">
+    <button class="cal-nav-btn" onclick="${opts.navFn}(-1)">‹</button>
+    <div class="cal-title">${MONTHS[month]} ${year}</div>
+    <button class="cal-nav-btn" onclick="${opts.navFn}(1)">›</button>
+  </div>
+  <div class="cal-grid">`;
+  DOW_L.forEach(l=> html += `<div class="cal-dow">${l}</div>`);
+  cells.forEach(d=>{
+    if(d===null){ html += `<div class="cal-day empty"></div>`; return; }
+    const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let cls = 'cal-day';
+    if(ds===today) cls += ' today';
+    if(opts.isFuture && ds>today) cls += ' future';
+    if(opts.dayClass) cls += ' '+opts.dayClass(ds);
+    const dot = opts.dayDot && opts.dayDot(ds) ? '<span class="dot"></span>' : '';
+    html += `<div class="${cls}" onclick="${opts.clickFn?opts.clickFn+`('${ds}')`:''}">${d}${dot}</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+/* ============ shell: topbar + bottom nav + render dispatcher ============ */
+function renderShell(){
+  const nav = document.getElementById('bottom-nav');
+  nav.innerHTML = SECTIONS.map(s=>`
+    <button class="${state.section===s.id?'active':''}" onclick="goto('${s.id}')">
+      <span class="ic">${s.icon}</span><span>${s.label}</span>
+    </button>`).join('');
+}
+function setTop(title, showBack, action){
+  const top = document.getElementById('topbar');
+  top.innerHTML = `
+    ${showBack?`<button class="back-btn" onclick="history.back()">‹</button>`:''}
+    <h1>${title}</h1>
+    ${action?`<button class="top-action" onclick="${action.fn}">${action.label}</button>`:''}
+  `;
+}
+function view(){ return document.getElementById('view'); }
+function setFab(show, fn, icon){
+  const fab = document.getElementById('fab');
+  fab.style.display = show ? 'flex':'none';
+  fab.innerHTML = icon || '+';
+  fab.onclick = fn || null;
+}
+
+const RENDERERS = {}; // section -> fn
+
+function render(){
+  if(!dbReady){ view().innerHTML = `<div class="empty-state">Cargando…</div>`; return; }
+  renderShell();
+  setFab(false);
+  const fn = RENDERERS[state.section];
+  if(fn) fn();
+}
+
+/* ================= PERSONAL ================= */
+const PERSONAL_TABS = [{k:'habitos',l:'Hábitos'},{k:'notas',l:'Notas'},{k:'tareas',l:'Tareas'}];
+RENDERERS.personal = function(){
+  setTop('Personal', false);
+  const tabsHtml = `<div class="section-tabs">${PERSONAL_TABS.map(t=>`<button class="${state.sub===t.k?'active':''}" onclick="goto('personal','${t.k}')">${t.l}</button>`).join('')}</div>`;
+  if(state.sub==='habitos') renderHabitos(tabsHtml);
+  else if(state.sub==='notas') renderNotas(tabsHtml);
+  else renderTareas(tabsHtml);
+};
+
+// --- Hábitos ---
+let habitCalState = {habitId:null, year:new Date().getFullYear(), month:new Date().getMonth()};
+function renderHabitos(tabsHtml){
+  if(!habitCalState.habitId && DB.habitos.length) habitCalState.habitId = DB.habitos[0].id;
+  const today = todayStr();
+  const rows = DB.habitos.map(h=>{
+    const on = !!h.historial[today];
+    return `
+      <div class="habit-row">
+        <div class="habit-name" onclick="selectHabit('${h.id}')" style="cursor:pointer;${habitCalState.habitId===h.id?'color:var(--accent);':''}">${escapeHtml(h.nombre)}</div>
+        <div class="toggle ${on?'on':''}" onclick="toggleHabitToday('${h.id}')"><div class="knob"></div></div>
+        <div class="icon-btn danger" onclick="deleteHabit('${h.id}')">✕</div>
+      </div>`;
+  }).join('') || `<div class="empty-state"><span class="ic">🎯</span>Aún no tienes hábitos.<br>Agrega el primero abajo.</div>`;
+
+  let calHtml = '';
+  if(habitCalState.habitId){
+    const h = DB.habitos.find(x=>x.id===habitCalState.habitId);
+    if(h){
+      calHtml = `
+        <div class="section-sub" style="margin-top:18px;">Calendario mensual · <b style="color:var(--text)">${escapeHtml(h.nombre)}</b></div>
+        <div class="card">
+          ${monthGridHtml(habitCalState.year, habitCalState.month, {
+            navFn:'navHabitCal', clickFn:'toggleHabitDay',
+            dayClass:(ds)=> h.historial[ds] ? 'done' : (ds<today ? 'missed':''),
+          })}
+        </div>
+        ${habitStatsHtml(h)}
+      `;
+    }
+  }
+
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="list">${rows}</div>
+    <div class="inline-add">
+      <input type="text" id="new-habit-input" placeholder="Nuevo hábito (ej. Tomar suficiente agua)">
+      <button class="btn btn-primary" onclick="addHabit()">Agregar</button>
+    </div>
+    ${calHtml}
+  `;
+  const inp = document.getElementById('new-habit-input');
+  if(inp) inp.onkeydown = (e)=>{ if(e.key==='Enter') addHabit(); };
+}
+function habitStatsHtml(h){
+  const dates = Object.keys(h.historial).filter(d=>h.historial[d]);
+  const total = dates.length;
+  const created = h.creadoEn ? h.creadoEn.slice(0,10) : (dates[0]||todayStr());
+  const daysSinceCreated = Math.max(1, Math.round((new Date(todayStr())-new Date(created))/86400000)+1);
+  const pct = Math.round((total/daysSinceCreated)*100);
+  // racha actual
+  let streak=0, d=todayStr();
+  while(h.historial[d]){ streak++; d=addDays(d,-1); }
+  return `<div class="stats-grid">
+    <div class="stat-box"><div class="num">${total}</div><div class="lbl">CUMPLIDOS</div></div>
+    <div class="stat-box"><div class="num">${streak}</div><div class="lbl">RACHA</div></div>
+    <div class="stat-box"><div class="num">${isFinite(pct)?pct:0}%</div><div class="lbl">CONSTANCIA</div></div>
+  </div>`;
+}
+function selectHabit(id){ habitCalState.habitId = id; render(); }
+function navHabitCal(dir){
+  habitCalState.month += dir;
+  if(habitCalState.month<0){ habitCalState.month=11; habitCalState.year--; }
+  if(habitCalState.month>11){ habitCalState.month=0; habitCalState.year++; }
+  render();
+}
+async function addHabit(){
+  const inp = document.getElementById('new-habit-input');
+  const nombre = inp.value.trim();
+  if(!nombre) return;
+  const h = {id:uid(), nombre, historial:{}, creadoEn:new Date().toISOString()};
+  DB.habitos.push(h);
+  habitCalState.habitId = h.id;
+  await persist('habitos');
+  render();
+}
+async function deleteHabit(id){
+  DB.habitos = DB.habitos.filter(h=>h.id!==id);
+  if(habitCalState.habitId===id) habitCalState.habitId = DB.habitos[0]?.id || null;
+  await persist('habitos');
+  render();
+}
+async function toggleHabitToday(id){
+  const h = DB.habitos.find(x=>x.id===id); if(!h) return;
+  const t = todayStr();
+  if(h.historial[t]) delete h.historial[t]; else h.historial[t]=true;
+  await persist('habitos');
+  render();
+}
+async function toggleHabitDay(ds){
+  const h = DB.habitos.find(x=>x.id===habitCalState.habitId); if(!h) return;
+  if(ds>todayStr()) return;
+  if(h.historial[ds]) delete h.historial[ds]; else h.historial[ds]=true;
+  await persist('habitos');
+  render();
+}
+
+// --- Notas (por día) ---
+let personalDay = todayStr();
+function daySwitchHtml(){
+  return `<div class="day-switch">
+    <button onclick="changePersonalDay(-1)">‹</button>
+    <div class="day-label">${personalDay===todayStr()?'Hoy · ':''}${humanDate(personalDay)}</div>
+    <button onclick="changePersonalDay(1)">›</button>
+  </div>${personalDay!==todayStr()?`<div style="text-align:center;margin:-8px 0 12px;"><button class="btn-ghost btn today-btn" style="width:auto;padding:6px 12px;border-radius:8px;" onclick="goToday()">Ir a hoy</button></div>`:''}`;
+}
+function changePersonalDay(n){ personalDay = addDays(personalDay, n); render(); }
+function goToday(){ personalDay = todayStr(); render(); }
+function notaPreview(texto){
+  const oneLine = (texto||'').replace(/\s+/g,' ').trim();
+  return oneLine.length>64 ? oneLine.slice(0,64)+'…' : oneLine;
+}
+function renderNotas(tabsHtml){
+  const notas = (DB.notas[personalDay]||[]).slice().sort((a,b)=>(b.hora||'').localeCompare(a.hora||''));
+  const rows = notas.map(n=>`
+    <div class="note-card" onclick="openNotaModal('${personalDay}','${n.id}')">
+      <div class="note-time">${n.hora||''}</div>
+      <div class="note-preview">${escapeHtml(notaPreview(n.texto))}</div>
+      <div class="note-arrow">›</div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">📝</span>Sin notas este día.</div>`;
+  view().innerHTML = `
+    ${tabsHtml}
+    ${daySwitchHtml()}
+    <div class="card">
+      <textarea id="nota-nueva-txt" placeholder="Escribe una nota…" style="min-height:100px;"></textarea>
+      <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="guardarNotaNueva()">Guardar</button>
+    </div>
+    <div class="section-sub" style="margin:16px 0 8px;">Notas de este día</div>
+    <div class="notes-grid">${rows}</div>
+  `;
+  const ta = document.getElementById('nota-nueva-txt');
+  if(ta) ta.onkeydown = (e)=>{ if(e.key==='Enter' && (e.metaKey||e.ctrlKey)) guardarNotaNueva(); };
+}
+async function guardarNotaNueva(){
+  const ta = document.getElementById('nota-nueva-txt');
+  const v = ta.value.trim();
+  if(!v) return;
+  if(!DB.notas[personalDay]) DB.notas[personalDay] = [];
+  const hora = new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+  DB.notas[personalDay].push({id:uid(), texto:v, hora});
+  await persist('notas');
+  render();
+}
+function openNotaModal(fecha, id){
+  const lista = DB.notas[fecha]||[];
+  const n = lista.find(x=>x.id===id);
+  if(!n) return;
+  openModal('Nota'+(n.hora?' · '+n.hora:''), `
+    <textarea id="nota-edit-txt" style="min-height:200px;">${escapeHtml(n.texto)}</textarea>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-block" onclick="eliminarNota('${fecha}','${id}')">Eliminar</button>
+      <button class="btn btn-primary btn-block" onclick="guardarEdicionNota('${fecha}','${id}')">Guardar</button>
+    </div>
+  `);
+}
+async function guardarEdicionNota(fecha, id){
+  const lista = DB.notas[fecha]||[];
+  const n = lista.find(x=>x.id===id);
+  if(!n) return;
+  const v = document.getElementById('nota-edit-txt').value.trim();
+  if(!v){ await eliminarNota(fecha, id); return; }
+  n.texto = v;
+  await persist('notas');
+  closeModal(); render();
+}
+async function eliminarNota(fecha, id){
+  DB.notas[fecha] = (DB.notas[fecha]||[]).filter(x=>x.id!==id);
+  if(DB.notas[fecha].length===0) delete DB.notas[fecha];
+  await persist('notas');
+  closeModal(); render();
+}
+
+// --- Tareas (por día) ---
+function renderTareas(tabsHtml){
+  const list = DB.tareas[personalDay] || [];
+  const rows = list.map(t=>`
+    <div class="checkline">
+      <input type="checkbox" ${t.hecho?'checked':''} onchange="toggleTask('${t.id}')">
+      <div class="txt ${t.hecho?'done':''}">${escapeHtml(t.texto)}</div>
+      <div class="icon-btn danger" onclick="deleteTask('${t.id}')">✕</div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">✅</span>Sin tareas para este día.</div>`;
+  view().innerHTML = `
+    ${tabsHtml}
+    ${daySwitchHtml()}
+    <div class="list">${rows}</div>
+    <div class="inline-add">
+      <input type="text" id="new-task-input" placeholder="Nueva tarea de este día">
+      <button class="btn btn-primary" onclick="addTask()">Agregar</button>
+    </div>
+  `;
+  const inp = document.getElementById('new-task-input');
+  if(inp) inp.onkeydown = (e)=>{ if(e.key==='Enter') addTask(); };
+}
+async function addTask(){
+  const inp = document.getElementById('new-task-input');
+  const texto = inp.value.trim(); if(!texto) return;
+  if(!DB.tareas[personalDay]) DB.tareas[personalDay]=[];
+  DB.tareas[personalDay].push({id:uid(), texto, hecho:false});
+  await persist('tareas');
+  render();
+}
+async function toggleTask(id){
+  const list = DB.tareas[personalDay]||[];
+  const t = list.find(x=>x.id===id); if(!t) return;
+  t.hecho = !t.hecho;
+  await persist('tareas');
+  render();
+}
+async function deleteTask(id){
+  DB.tareas[personalDay] = (DB.tareas[personalDay]||[]).filter(x=>x.id!==id);
+  await persist('tareas');
+  render();
+}
+
+/* ================= ATLETA ================= */
+const ATLETA_TABS = [{k:'biblioteca',l:'Biblioteca'},{k:'cancha',l:'🏀 Cancha'},{k:'niveles',l:'Niveles'},{k:'aleatoria',l:'Rutina aleatoria'},{k:'personalizada',l:'Personalizada'},{k:'agregar',l:'Agregar ejercicio'},{k:'entrenar',l:'Entrenar'},{k:'misrutinas',l:'Mis rutinas'}];
+const NIVELES = [{v:'principiante',l:'Principiante'},{v:'intermedio',l:'Intermedio'},{v:'avanzado',l:'Avanzado'}];
+const RANGOS_REPS = [{v:'',l:'No especifica'},{v:'pocas',l:'Pocas repeticiones (fuerza / técnica)'},{v:'muchas',l:'Muchas repeticiones (resistencia / cardio)'}];
+RENDERERS.atleta = function(){
+  setTop('Atleta', false);
+  const tabsHtml = `<div class="section-tabs">${ATLETA_TABS.map(t=>`<button class="${state.sub===t.k?'active':''}" onclick="goto('atleta','${t.k}')">${t.l}</button>`).join('')}</div>`;
+  if(state.sub==='biblioteca') renderBiblioteca(tabsHtml);
+  else if(state.sub==='cancha') renderCancha(tabsHtml);
+  else if(state.sub==='niveles') renderNiveles(tabsHtml);
+  else if(state.sub==='aleatoria') renderRutinaAleatoria(tabsHtml);
+  else if(state.sub==='personalizada') renderRutinaPersonalizada(tabsHtml);
+  else if(state.sub==='entrenar') renderEntrenar(tabsHtml);
+  else if(state.sub==='misrutinas') renderMisRutinas(tabsHtml);
+  else renderAgregarEjercicio(tabsHtml);
+};
+
+function ejCategorias(){ return [...new Set(DB.ejercicios.map(e=>e.categoria).filter(Boolean))]; }
+function ejSubcategorias(cat){ return [...new Set(DB.ejercicios.filter(e=>!cat||e.categoria===cat).map(e=>e.subcategoria).filter(Boolean))]; }
+
+let bibFilters = {categoria:'', subcategoria:'', implementos:'', nivel:''};
+function renderBiblioteca(tabsHtml){
+  let list = DB.ejercicios.slice();
+  if(bibFilters.categoria) list = list.filter(e=>e.categoria===bibFilters.categoria);
+  if(bibFilters.subcategoria) list = list.filter(e=>e.subcategoria===bibFilters.subcategoria);
+  if(bibFilters.nivel) list = list.filter(e=>e.nivel===bibFilters.nivel);
+  if(bibFilters.implementos==='con') list = list.filter(e=>e.implementos && e.implementos.length);
+  if(bibFilters.implementos==='sin') list = list.filter(e=>!e.implementos || !e.implementos.length);
+
+  const cats = ejCategorias();
+  const subs = ejSubcategorias(bibFilters.categoria);
+  const cards = list.map(e=>`
+    <div class="ex-card" onclick="openEjercicioDetalle('${e.id}')">
+      ${e.foto? `<img class="ex-photo" src="${e.foto}">` : `<div class="ex-photo ph-empty">🏋️</div>`}
+      <div class="ex-body">
+        <div class="ex-name">${escapeHtml(e.nombre)}</div>
+        <span class="pill accent">${e.nivel||'—'}</span>
+        ${e.rangoReps?`<span class="pill teal" style="margin-left:4px;">${e.rangoReps==='pocas'?'Pocas reps':'Muchas reps'}</span>`:''}
+      </div>
+    </div>`).join('') || `<div class="empty-state" style="grid-column:1/-1;"><span class="ic">📚</span>Aún no hay ejercicios.<br>Crea el primero en "Agregar ejercicio".</div>`;
+
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="filters-row">
+      <select onchange="bibFilters.categoria=this.value;bibFilters.subcategoria='';render()">
+        <option value="">Categoría: todas</option>
+        ${cats.map(c=>`<option value="${c}" ${bibFilters.categoria===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <select onchange="bibFilters.subcategoria=this.value;render()">
+        <option value="">Subcategoría: todas</option>
+        ${subs.map(c=>`<option value="${c}" ${bibFilters.subcategoria===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <select onchange="bibFilters.nivel=this.value;render()">
+        <option value="">Nivel: todos</option>
+        ${NIVELES.map(n=>`<option value="${n.v}" ${bibFilters.nivel===n.v?'selected':''}>${n.l}</option>`).join('')}
+      </select>
+      <select onchange="bibFilters.implementos=this.value;render()">
+        <option value="">Implementos: todos</option>
+        <option value="con" ${bibFilters.implementos==='con'?'selected':''}>Con implementos</option>
+        <option value="sin" ${bibFilters.implementos==='sin'?'selected':''}>Sin implementos</option>
+      </select>
+    </div>
+    <div class="ex-grid">${cards}</div>
+  `;
+}
+
+function openEjercicioDetalle(id){
+  const e = DB.ejercicios.find(x=>x.id===id); if(!e) return;
+  const rango = RANGOS_REPS.find(r=>r.v===(e.rangoReps||''));
+  openModal(escapeHtml(e.nombre), `
+    ${e.foto?`<img src="${e.foto}" style="width:100%;border-radius:14px;aspect-ratio:4/3;object-fit:cover;">`:''}
+    <div class="chip-row" style="margin-top:12px;">
+      <span class="pill accent">${e.nivel||'—'}</span>
+      <span class="pill">${e.categoria||'—'}</span>
+      <span class="pill">${e.subcategoria||'—'}</span>
+      <span class="pill teal">${e.tipo==='tiempo'?'Por tiempo':'Por repeticiones'}</span>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      ${e.rangoReps?`<div class="row-between"><span class="muted">Rango sugerido</span><b>${rango?rango.l:''}</b></div><div class="divider"></div>`:''}
+      <div class="row-between"><span class="muted">Implementos</span><b>${(e.implementos&&e.implementos.length)?e.implementos.join(', '):'Ninguno'}</b></div>
+    </div>
+    ${e.notas?`<div class="hint" style="margin-top:10px;"><b style="color:var(--text)">Notas:</b> ${escapeHtml(e.notas)}</div>`:''}
+    <div class="hint">Las series y repeticiones se definen al armar tu rutina, no aquí.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="editEjercicio('${e.id}')">Editar</button>
+      <button class="btn btn-danger btn-block" onclick="deleteEjercicio('${e.id}')">Eliminar</button>
+    </div>
+  `);
+}
+async function deleteEjercicio(id){
+  DB.ejercicios = DB.ejercicios.filter(e=>e.id!==id);
+  await persist('ejercicios');
+  closeModal(); render();
+}
+function editEjercicio(id){
+  closeModal();
+  goto('atleta','agregar', id);
+}
+
+// --- Agregar / editar ejercicio ---
+let ejForm = null;
+function blankEjForm(){ return {id:null, foto:'', nombre:'', categoria:'', subcategoria:'', nivel:'principiante', tipo:'repeticiones', rangoReps:'', series:3, valor:12, descansoSerie:30, descansoFinal:60, implementos:[], notas:''}; }
+function renderAgregarEjercicio(tabsHtml){
+  const editing = state.extra ? DB.ejercicios.find(e=>e.id===state.extra) : null;
+  if(!ejForm || ejForm.id !== (editing?editing.id:null)){
+    ejForm = editing ? JSON.parse(JSON.stringify(editing)) : blankEjForm();
+  }
+  const f = ejForm;
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="card" style="cursor:pointer;" onclick="togglePdfPanel()">
+      <div class="row" style="justify-content:space-between;">
+        <div style="font-weight:700;">📄 Extraer desde un PDF</div>
+        <div class="hint" id="pdf-toggle-arrow" style="margin:0;">${pdfPanelOpen?'▴':'▾'}</div>
+      </div>
+    </div>
+    <div id="pdf-panel" style="display:${pdfPanelOpen?'block':'none'};">
+      <div class="card" style="text-align:center; cursor:pointer;" onclick="document.getElementById('pdf-file-input').click()">
+        <div style="font-size:26px;">📄</div>
+        <div id="pdf-filepick-label" class="hint" style="margin-top:4px;">${pdfTool.doc ? 'PDF cargado — toca para cambiar de archivo' : 'Toca para elegir un PDF (puede ser escaneado)'}</div>
+      </div>
+      <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none;">
+
+      <div id="pdf-controls" style="display:${pdfTool.doc?'block':'none'};">
+        <div class="pdf-toolbar">
+          <div class="row">
+            <button class="icon-btn" id="pdf-prev">‹</button>
+            <span class="hint" id="pdf-page-label" style="margin:0;">Página 1 de 1</span>
+            <button class="icon-btn" id="pdf-next">›</button>
+          </div>
+          <div class="row">
+            <button class="icon-btn" id="pdf-zoom-out">−</button>
+            <span class="hint" id="pdf-zoom-label" style="margin:0; min-width:34px; text-align:center;">100%</span>
+            <button class="icon-btn" id="pdf-zoom-in">+</button>
+          </div>
+        </div>
+        <div class="pdf-canvas-wrap" id="pdf-canvas-wrap">
+          <canvas id="pdf-canvas"></canvas>
+          <canvas id="pdf-overlay"></canvas>
+        </div>
+
+        <label class="field-label">Copiar / OCR hacia</label>
+        <select id="pdf-target">
+          <option value="notas" selected>Notas</option>
+          <option value="nombre">Nombre del ejercicio</option>
+          <option value="categoria">Categoría</option>
+        </select>
+
+        <div class="pdf-actions-row">
+          <button class="btn btn-ghost" id="pdf-copy-page">Copiar texto de la página</button>
+          <button class="btn btn-ghost" id="pdf-ocr-page">OCR de toda la página</button>
+          <button class="btn btn-ghost" id="pdf-select-zone">Seleccionar zona</button>
+        </div>
+        <div class="pdf-actions-row" id="pdf-selection-actions" style="display:none;">
+          <button class="btn btn-ghost" id="pdf-copy-zone">Copiar texto de la zona</button>
+          <button class="btn btn-ghost" id="pdf-ocr-zone">OCR de la zona</button>
+          <button class="btn btn-primary" id="pdf-use-image">Usar como foto</button>
+          <button class="btn btn-ghost" id="pdf-cancel-zone">Cancelar</button>
+        </div>
+        <div class="hint" id="pdf-status"></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <label class="field-label">Foto del ejercicio</label>
+    <div class="photo-drop" id="ej-photo-drop" onclick="document.getElementById('ej-photo-input').click()">
+      ${f.foto?`<img src="${f.foto}">`:`<div>📷</div><div>Toca para subir una foto</div>`}
+    </div>
+    <input type="file" id="ej-photo-input" accept="image/*" style="display:none;">
+
+    <label class="field-label">Nombre del ejercicio</label>
+    <input type="text" id="ej-nombre" value="${escapeHtml(f.nombre)}" placeholder="Ej. Sentadilla búlgara">
+
+    <label class="field-label">Categoría</label>
+    <input type="text" id="ej-categoria" value="${escapeHtml(f.categoria)}" placeholder="Ej. Piernas" list="cat-list">
+    <datalist id="cat-list">${ejCategorias().map(c=>`<option value="${c}">`).join('')}</datalist>
+
+    <label class="field-label">Subcategoría</label>
+    <input type="text" id="ej-subcategoria" value="${escapeHtml(f.subcategoria)}" placeholder="Ej. Cuádriceps" list="sub-list">
+    <datalist id="sub-list">${ejSubcategorias().map(c=>`<option value="${c}">`).join('')}</datalist>
+
+    <label class="field-label">Nivel</label>
+    <div class="seg">${NIVELES.map(n=>`<button class="${f.nivel===n.v?'on':''}" onclick="ejForm.nivel='${n.v}';render()">${n.l}</button>`).join('')}</div>
+
+    <label class="field-label">Tipo</label>
+    <div class="seg">
+      <button class="${f.tipo==='repeticiones'?'on':''}" onclick="ejForm.tipo='repeticiones';render()">Repeticiones</button>
+      <button class="${f.tipo==='tiempo'?'on':''}" onclick="ejForm.tipo='tiempo';render()">Tiempo</button>
+    </div>
+
+    <label class="field-label">Rango de repeticiones sugerido</label>
+    <div class="hint" style="margin:-2px 0 6px;">Depende del ejercicio: no es lo mismo 100 botes de balón que 100 sprints en un minuto.</div>
+    <div class="seg">${RANGOS_REPS.map(r=>`<button class="${(f.rangoReps||'')===r.v?'on':''}" onclick="ejForm.rangoReps='${r.v}';render()">${r.v?(r.v==='pocas'?'Pocas':'Muchas'):'N/A'}</button>`).join('')}</div>
+
+    <label class="field-label">Series sugeridas (referencia, ajustable al armar la rutina)</label>
+    <input type="number" id="ej-series" value="${f.series}">
+
+    <label class="field-label">${f.tipo==='tiempo'?'Duración sugerida por serie (segundos)':'Repeticiones sugeridas por serie'}</label>
+    <input type="number" id="ej-valor" value="${f.valor}">
+
+    <label class="field-label">Descanso entre series sugerido (segundos)</label>
+    <input type="number" id="ej-descanso-serie" value="${f.descansoSerie}">
+
+    <label class="field-label">Descanso al finalizar sugerido (segundos)</label>
+    <input type="number" id="ej-descanso-final" value="${f.descansoFinal}">
+
+    <label class="field-label">Implementos (separados por coma, o vacío si no usa)</label>
+    <input type="text" id="ej-implementos" value="${escapeHtml((f.implementos||[]).join(', '))}" placeholder="Ej. Mancuernas, banda">
+
+    <label class="field-label">Notas</label>
+    <textarea id="ej-notas" placeholder="Técnica, cuidados, variaciones…">${escapeHtml(f.notas)}</textarea>
+
+    <button class="btn btn-primary btn-block" style="margin-top:16px;" onclick="guardarEjercicio()">${editing?'Guardar cambios':'Crear ejercicio'}</button>
+    ${editing?`<button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="cancelarEdicionEj()">Cancelar edición</button>`:''}
+  `;
+  document.getElementById('ej-photo-input').onchange = (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{ ejForm.foto = reader.result; render(); };
+    reader.readAsDataURL(file);
+  };
+  wirePdfPanelEvents();
+  if(pdfPanelOpen && pdfTool.doc) renderPdfPage(pdfTool.pageNum);
+}
+function cancelarEdicionEj(){ ejForm = blankEjForm(); goto('atleta','biblioteca'); }
+async function guardarEjercicio(){
+  const nombre = document.getElementById('ej-nombre').value.trim();
+  if(!nombre){ alert('Ponle un nombre al ejercicio'); return; }
+  const impStr = document.getElementById('ej-implementos').value.trim();
+  const data = {
+    id: ejForm.id || uid(),
+    foto: ejForm.foto || '',
+    nombre,
+    categoria: document.getElementById('ej-categoria').value.trim(),
+    subcategoria: document.getElementById('ej-subcategoria').value.trim(),
+    nivel: ejForm.nivel,
+    tipo: ejForm.tipo,
+    rangoReps: ejForm.rangoReps||'',
+    series: Number(document.getElementById('ej-series').value)||1,
+    valor: Number(document.getElementById('ej-valor').value)||0,
+    descansoSerie: Number(document.getElementById('ej-descanso-serie').value)||0,
+    descansoFinal: Number(document.getElementById('ej-descanso-final').value)||0,
+    implementos: impStr? impStr.split(',').map(s=>s.trim()).filter(Boolean) : [],
+    notas: document.getElementById('ej-notas').value.trim()
+  };
+  const idx = DB.ejercicios.findIndex(e=>e.id===data.id);
+  if(idx>=0) DB.ejercicios[idx]=data; else DB.ejercicios.push(data);
+  await persist('ejercicios');
+  ejForm = blankEjForm();
+  goto('atleta','biblioteca');
+}
+
+// --- extractor de ejercicios desde PDF (texto, OCR, recorte de imagen) ---
+// Vive dentro del mismo editor de "Agregar ejercicio": lo extraído se escribe
+// directo en los campos visibles del formulario, no en un borrador aparte.
+let pdfTool = {doc:null, pageNum:1, zoom:1, viewport:null, cropRect:null, dragStart:null, selecting:false};
+let pdfRenderSeq = 0;
+let pdfPanelOpen = false;
+function togglePdfPanel(){
+  pdfPanelOpen = !pdfPanelOpen;
+  const panel = document.getElementById('pdf-panel');
+  if(panel) panel.style.display = pdfPanelOpen ? 'block' : 'none';
+  const arrow = document.getElementById('pdf-toggle-arrow');
+  if(arrow) arrow.textContent = pdfPanelOpen ? '▴' : '▾';
+  if(pdfPanelOpen && pdfTool.doc) renderPdfPage(pdfTool.pageNum);
+}
+function setPdfStatus(msg){ const el = document.getElementById('pdf-status'); if(el) el.textContent = msg; }
+function appendToPdfField(text){
+  const targetSel = document.getElementById('pdf-target');
+  const target = targetSel ? targetSel.value : 'notas';
+  const idMap = {nombre:'ej-nombre', categoria:'ej-categoria', notas:'ej-notas'};
+  const el = document.getElementById(idMap[target]);
+  if(!el) return;
+  if(target === 'notas'){
+    const clean = text.trim();
+    el.value = el.value ? el.value + '\n\n' + clean : clean;
+  } else {
+    const clean = text.replace(/\s+/g,' ').trim();
+    el.value = el.value ? el.value + ' ' + clean : clean;
+  }
+}
+function wirePdfPanelEvents(){
+  const fileInput = document.getElementById('pdf-file-input');
+  if(!fileInput) return;
+  fileInput.onchange = async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const lbl = document.getElementById('pdf-filepick-label');
+    if(lbl) lbl.textContent = 'Cargando "'+file.name+'"...';
+    try{
+      const buf = await file.arrayBuffer();
+      pdfTool.doc = await pdfjsLib.getDocument({data:buf}).promise;
+      pdfTool.pageNum = 1; pdfTool.zoom = 1;
+      if(lbl) lbl.textContent = file.name + ' — toca para cambiar de archivo';
+      const controls = document.getElementById('pdf-controls');
+      if(controls) controls.style.display = 'block';
+      renderPdfPage(1);
+    }catch(err){
+      console.error(err);
+      if(lbl) lbl.textContent = 'No se pudo abrir el PDF, intenta con otro archivo.';
+    }
+  };
+  const prev = document.getElementById('pdf-prev'), next = document.getElementById('pdf-next');
+  if(prev) prev.onclick = ()=>{ if(pdfTool.pageNum>1) renderPdfPage(pdfTool.pageNum-1); };
+  if(next) next.onclick = ()=>{ if(pdfTool.doc && pdfTool.pageNum<pdfTool.doc.numPages) renderPdfPage(pdfTool.pageNum+1); };
+  const zin = document.getElementById('pdf-zoom-in'), zout = document.getElementById('pdf-zoom-out');
+  if(zin) zin.onclick = ()=>{ pdfTool.zoom = Math.min(3, +(pdfTool.zoom*1.25).toFixed(2)); renderPdfPage(pdfTool.pageNum); };
+  if(zout) zout.onclick = ()=>{ pdfTool.zoom = Math.max(0.5, +(pdfTool.zoom/1.25).toFixed(2)); renderPdfPage(pdfTool.pageNum); };
+  const b = (id,fn)=>{ const el=document.getElementById(id); if(el) el.onclick = fn; };
+  b('pdf-copy-page', pdfCopyPageText);
+  b('pdf-ocr-page', pdfOcrPage);
+  b('pdf-select-zone', pdfToggleSelect);
+  b('pdf-copy-zone', pdfCopyZoneText);
+  b('pdf-ocr-zone', pdfOcrZone);
+  b('pdf-use-image', pdfUseAsPhoto);
+  b('pdf-cancel-zone', pdfCancelZone);
+}
+async function renderPdfPage(num){
+  const mySeq = ++pdfRenderSeq;
+  const canvas = document.getElementById('pdf-canvas');
+  const overlay = document.getElementById('pdf-overlay');
+  const wrap = document.getElementById('pdf-canvas-wrap');
+  if(!canvas || !overlay || !wrap || !pdfTool.doc) return;
+  const lbl = document.getElementById('pdf-page-label');
+  if(lbl) lbl.textContent = 'Cargando página...';
+  const page = await pdfTool.doc.getPage(num);
+  if(mySeq !== pdfRenderSeq) return;
+  const wrapWidth = wrap.clientWidth || 300;
+  const baseViewport = page.getViewport({scale:1});
+  const fitScale = Math.min(1.3, Math.max(0.5, (wrapWidth-4)/baseViewport.width));
+  const scale = Math.min(4, Math.max(0.4, fitScale*pdfTool.zoom));
+  const viewport = page.getViewport({scale});
+  canvas.width = viewport.width; canvas.height = viewport.height;
+  overlay.width = viewport.width; overlay.height = viewport.height;
+  overlay.style.width = viewport.width+'px'; overlay.style.height = viewport.height+'px';
+  await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+  if(mySeq !== pdfRenderSeq) return;
+  pdfTool.viewport = viewport;
+  pdfTool.pageNum = num;
+  pdfTool.cropRect = null; pdfTool.selecting = false;
+  overlay.getContext('2d').clearRect(0,0,overlay.width,overlay.height);
+  wrap.classList.remove('cropping');
+  const selBar = document.getElementById('pdf-selection-actions'); if(selBar) selBar.style.display='none';
+  const selBtn = document.getElementById('pdf-select-zone'); if(selBtn) selBtn.textContent = 'Seleccionar zona';
+  if(lbl) lbl.textContent = 'Página '+num+' de '+pdfTool.doc.numPages;
+  const zl = document.getElementById('pdf-zoom-label'); if(zl) zl.textContent = Math.round((scale/fitScale)*100)+'%';
+  const pv = document.getElementById('pdf-prev'); if(pv) pv.disabled = num<=1;
+  const nx = document.getElementById('pdf-next'); if(nx) nx.disabled = num>=pdfTool.doc.numPages;
+  wirePdfCanvasDrag();
+}
+function pdfOverlayPoint(e, overlay){
+  const rect = overlay.getBoundingClientRect();
+  const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
+  return {
+    x: Math.max(0, Math.min(overlay.width, cx*(overlay.width/rect.width))),
+    y: Math.max(0, Math.min(overlay.height, cy*(overlay.height/rect.height)))
+  };
+}
+function pdfDrawSelectionPreview(){
+  const overlay = document.getElementById('pdf-overlay'); if(!overlay) return;
+  const octx = overlay.getContext('2d');
+  octx.clearRect(0,0,overlay.width, overlay.height);
+  if(!pdfTool.cropRect) return;
+  const r = pdfTool.cropRect;
+  octx.fillStyle = 'rgba(142,124,195,0.18)';
+  octx.strokeStyle = '#8E7CC3';
+  octx.lineWidth = 2;
+  octx.fillRect(r.x,r.y,r.w,r.h);
+  octx.strokeRect(r.x,r.y,r.w,r.h);
+}
+function wirePdfCanvasDrag(){
+  const overlay = document.getElementById('pdf-overlay'); if(!overlay) return;
+  overlay.onpointerdown = (e)=>{
+    if(!pdfTool.selecting) return;
+    e.preventDefault();
+    pdfTool.dragStart = pdfOverlayPoint(e, overlay);
+    pdfTool.cropRect = {x:pdfTool.dragStart.x, y:pdfTool.dragStart.y, w:0, h:0};
+  };
+  overlay.onpointermove = (e)=>{
+    if(!pdfTool.selecting || !pdfTool.dragStart) return;
+    e.preventDefault();
+    const p = pdfOverlayPoint(e, overlay);
+    pdfTool.cropRect = {
+      x: Math.min(pdfTool.dragStart.x, p.x), y: Math.min(pdfTool.dragStart.y, p.y),
+      w: Math.abs(p.x-pdfTool.dragStart.x), h: Math.abs(p.y-pdfTool.dragStart.y)
+    };
+    pdfDrawSelectionPreview();
+  };
+}
+window.addEventListener('pointerup', ()=>{
+  if(!pdfTool.selecting || !pdfTool.dragStart) return;
+  pdfTool.dragStart = null;
+  const sel = document.getElementById('pdf-selection-actions');
+  if(sel) sel.style.display = (pdfTool.cropRect && pdfTool.cropRect.w>8 && pdfTool.cropRect.h>8) ? 'flex' : 'none';
+});
+function pdfToggleSelect(){
+  pdfTool.selecting = !pdfTool.selecting;
+  const btn = document.getElementById('pdf-select-zone');
+  if(btn) btn.textContent = pdfTool.selecting ? 'Arrastra sobre la página...' : 'Seleccionar zona';
+  const wrap = document.getElementById('pdf-canvas-wrap');
+  if(wrap) wrap.classList.toggle('cropping', pdfTool.selecting);
+  pdfTool.cropRect = null;
+  const sel = document.getElementById('pdf-selection-actions'); if(sel) sel.style.display = 'none';
+  const overlay = document.getElementById('pdf-overlay');
+  if(overlay) overlay.getContext('2d').clearRect(0,0,overlay.width, overlay.height);
+}
+function pdfCancelZone(){
+  pdfTool.selecting = false;
+  pdfTool.cropRect = null; pdfTool.dragStart = null;
+  const btn = document.getElementById('pdf-select-zone'); if(btn) btn.textContent = 'Seleccionar zona';
+  const wrap = document.getElementById('pdf-canvas-wrap'); if(wrap) wrap.classList.remove('cropping');
+  const sel = document.getElementById('pdf-selection-actions'); if(sel) sel.style.display='none';
+  const overlay = document.getElementById('pdf-overlay');
+  if(overlay) overlay.getContext('2d').clearRect(0,0,overlay.width, overlay.height);
+}
+function pdfItemBBox(item){
+  const x0=item.transform[4], y0=item.transform[5];
+  const w=item.width||1, h=item.height||Math.hypot(item.transform[2],item.transform[3])||10;
+  const pts=[
+    pdfTool.viewport.convertToViewportPoint(x0,y0),
+    pdfTool.viewport.convertToViewportPoint(x0+w,y0),
+    pdfTool.viewport.convertToViewportPoint(x0,y0+h),
+    pdfTool.viewport.convertToViewportPoint(x0+w,y0+h)
+  ];
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  return {minX:Math.min(...xs), maxX:Math.max(...xs), minY:Math.min(...ys), maxY:Math.max(...ys)};
+}
+function pdfRectsOverlap(a,r){ return a.minX<r.x+r.w && a.maxX>r.x && a.minY<r.y+r.h && a.maxY>r.y; }
+function pdfExtractTextFromRect(content, rect){
+  const items = content.items
+    .filter(it=>it.str.trim().length && pdfRectsOverlap(pdfItemBBox(it), rect))
+    .map(it=>({it, box:pdfItemBBox(it)}))
+    .sort((a,b)=> Math.abs(a.box.minY-b.box.minY)>4 ? a.box.minY-b.box.minY : a.box.minX-b.box.minX);
+  let lines=[], lastY=null, line=[];
+  items.forEach(({it,box})=>{
+    if(lastY!==null && Math.abs(box.minY-lastY)>6){ lines.push(line.join(' ')); line=[]; }
+    line.push(it.str); lastY=box.minY;
+  });
+  if(line.length) lines.push(line.join(' '));
+  return lines.join('\n').trim();
+}
+async function pdfCopyPageText(){
+  if(!pdfTool.doc) return;
+  const page = await pdfTool.doc.getPage(pdfTool.pageNum);
+  const content = await page.getTextContent();
+  if(!content.items.length){ setPdfStatus('Esta página no tiene texto seleccionable, prueba OCR.'); return; }
+  let lines=[], lastY=null, line=[];
+  content.items.forEach(item=>{
+    const y = Math.round(item.transform[5]);
+    if(lastY!==null && Math.abs(y-lastY)>4){ lines.push(line.join(' ')); line=[]; }
+    line.push(item.str); lastY=y;
+  });
+  if(line.length) lines.push(line.join(' '));
+  const texto = lines.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+  appendToPdfField(texto);
+  setPdfStatus('Texto copiado.');
+}
+async function pdfCopyZoneText(){
+  if(!pdfTool.doc || !pdfTool.cropRect) return;
+  const page = await pdfTool.doc.getPage(pdfTool.pageNum);
+  const content = await page.getTextContent();
+  const texto = pdfExtractTextFromRect(content, pdfTool.cropRect);
+  if(!texto){ setPdfStatus('No hay texto seleccionable en esa zona, prueba OCR de la zona.'); return; }
+  appendToPdfField(texto);
+  setPdfStatus('Texto de la zona copiado.');
+  pdfCancelZone();
+}
+async function pdfOcrPage(){
+  if(!pdfTool.doc) return;
+  if(!window.Tesseract){ setPdfStatus('El motor de OCR no cargó, revisa tu conexión.'); return; }
+  const canvas = document.getElementById('pdf-canvas');
+  setPdfStatus('Reconociendo texto de la página...');
+  try{
+    const dataUrl = canvas.toDataURL('image/png');
+    const result = await Tesseract.recognize(dataUrl, 'spa', {
+      logger:m=>{ if(m.status==='recognizing text'){ setPdfStatus('Reconociendo... '+Math.round((m.progress||0)*100)+'%'); } }
+    });
+    const texto=(result.data.text||'').trim();
+    if(!texto){ setPdfStatus('No se detectó texto en esta página.'); return; }
+    appendToPdfField(texto);
+    setPdfStatus('Listo, revisa el texto por si el OCR se equivocó en algo.');
+  }catch(err){ console.error(err); setPdfStatus('Ocurrió un error al reconocer el texto.'); }
+}
+async function pdfOcrZone(){
+  if(!pdfTool.cropRect) return;
+  if(!window.Tesseract){ setPdfStatus('El motor de OCR no cargó, revisa tu conexión.'); return; }
+  const canvas = document.getElementById('pdf-canvas');
+  setPdfStatus('Reconociendo texto de la zona...');
+  try{
+    const r = pdfTool.cropRect;
+    const tmp = document.createElement('canvas');
+    tmp.width = Math.round(r.w); tmp.height = Math.round(r.h);
+    tmp.getContext('2d').drawImage(canvas, r.x, r.y, r.w, r.h, 0, 0, tmp.width, tmp.height);
+    const dataUrl = tmp.toDataURL('image/png');
+    const result = await Tesseract.recognize(dataUrl,'spa',{
+      logger:m=>{ if(m.status==='recognizing text'){ setPdfStatus('Reconociendo... '+Math.round((m.progress||0)*100)+'%'); } }
+    });
+    const texto=(result.data.text||'').trim();
+    if(!texto){ setPdfStatus('No se detectó texto en esa zona.'); return; }
+    appendToPdfField(texto);
+    setPdfStatus('Listo, revisa el texto por si el OCR se equivocó en algo.');
+    pdfCancelZone();
+  }catch(err){ console.error(err); setPdfStatus('Ocurrió un error al reconocer la zona.'); }
+}
+function pdfUseAsPhoto(){
+  if(!pdfTool.cropRect) return;
+  const canvas = document.getElementById('pdf-canvas');
+  const r = pdfTool.cropRect;
+  const maxDim = 1000;
+  const scale = Math.min(1, maxDim/Math.max(r.w,r.h));
+  const tmp = document.createElement('canvas');
+  tmp.width = Math.max(1, Math.round(r.w*scale));
+  tmp.height = Math.max(1, Math.round(r.h*scale));
+  tmp.getContext('2d').drawImage(canvas, r.x, r.y, r.w, r.h, 0, 0, tmp.width, tmp.height);
+  const dataUrl = tmp.toDataURL('image/jpeg', 0.85);
+  if(!ejForm) ejForm = blankEjForm();
+  ejForm.foto = dataUrl;
+  const drop = document.getElementById('ej-photo-drop');
+  if(drop) drop.innerHTML = `<img src="${dataUrl}">`;
+  setPdfStatus('Imagen recortada, lista como foto del ejercicio.');
+  pdfCancelZone();
+}
+
+
+// --- helpers compartidos de rutinas (aleatoria / personalizada / video) ---
+function filtrarEjerciciosPara(filters){
+  return DB.ejercicios.filter(e=>{
+    if(filters.nivel && e.nivel!==filters.nivel) return false;
+    if(filters.tipo && e.tipo!==filters.tipo) return false;
+    if(filters.implementos==='con' && !(e.implementos&&e.implementos.length)) return false;
+    if(filters.implementos==='sin' && (e.implementos&&e.implementos.length)) return false;
+    return true;
+  });
+}
+function ejercicioAItem(e, overrides){
+  return Object.assign({id:e.id, tipo:e.tipo, series:e.series, valor:e.valor, descansoSerie:e.descansoSerie||0, descansoFinal:e.descansoFinal||0}, overrides||{});
+}
+function estimarMinutos(items){
+  const segs = items.reduce((s,it)=> s + (Number(it.series)||0)*(it.tipo==='tiempo'?(Number(it.valor)||0):0) + Math.max(0,(Number(it.series)||0)-1)*(Number(it.descansoSerie)||0) + (Number(it.descansoFinal)||0), 0);
+  return Math.max(1, Math.round(segs/60));
+}
+function itemLineHtml(it, idx){
+  const e = DB.ejercicios.find(x=>x.id===it.id);
+  const nombre = e ? e.nombre : '(ejercicio eliminado)';
+  return `<div class="card">
+    <div class="row-between"><b>${idx+1}. ${escapeHtml(nombre)}</b>${e&&e.nivel?`<span class="pill accent">${e.nivel}</span>`:''}</div>
+    <div class="hint">${it.series} series · ${it.tipo==='tiempo'?it.valor+'s':it.valor+' reps'} · descanso ${it.descansoSerie||0}s entre series${it.descansoFinal?' · '+it.descansoFinal+'s al terminar':''}</div>
+  </div>`;
+}
+function abrirDetalleRutinaGenerada(items, opts){
+  opts = opts || {};
+  openModal(opts.titulo||'Rutina generada', `
+    <div class="list">${items.map(itemLineHtml).join('')}</div>
+    <div class="modal-actions">
+      ${opts.onRegenerar?`<button class="btn btn-ghost btn-block" onclick="closeModal();${opts.onRegenerar}()">🔄 Volver a generar</button>`:''}
+      ${opts.onGuardar?`<button class="btn btn-primary btn-block" onclick="${opts.onGuardar}()">💾 Guardar rutina</button>`:''}
+    </div>
+  `);
+}
+function recuadroRutinaHtml(items, opts){
+  opts = opts || {};
+  return `
+    <div class="card" style="cursor:pointer;" onclick="${opts.onOpen}()">
+      <div class="row-between"><b>${opts.icono||'📋'} ${opts.titulo||'Rutina generada'}</b><span class="pill accent">Ver todo ›</span></div>
+      <div class="hint">${items.length} ejercicios · ~${estimarMinutos(items)} min aprox.</div>
+    </div>
+    <div class="row" style="margin-top:10px; gap:8px;">
+      ${opts.onRegenerar?`<button class="btn btn-ghost" style="flex:1;" onclick="${opts.onRegenerar}()">🔄 Volver a generar</button>`:''}
+      ${opts.onGuardar?`<button class="btn btn-primary" style="flex:1;" onclick="${opts.onGuardar}()">💾 Guardar</button>`:''}
+    </div>
+  `;
+}
+
+// --- Rutina aleatoria ---
+let randFilters = {nivel:'', cantidad:5, tipo:'', implementos:''};
+let randResult = null;
+function renderRutinaAleatoria(tabsHtml){
+  view().innerHTML = `
+    ${tabsHtml}
+    <label class="field-label">Nivel</label>
+    <div class="seg">
+      ${['','principiante','intermedio','avanzado'].map(v=>`<button class="${randFilters.nivel===v?'on':''}" onclick="randFilters.nivel='${v}';render()">${v||'Todos'}</button>`).join('')}
+    </div>
+    <label class="field-label">Cantidad de ejercicios (1–10)</label>
+    <input type="number" min="1" max="10" value="${randFilters.cantidad}" onchange="randFilters.cantidad=Math.max(1,Math.min(10,Number(this.value)||1));">
+    <label class="field-label">Tipo</label>
+    <div class="seg">
+      <button class="${randFilters.tipo===''?'on':''}" onclick="randFilters.tipo='';render()">Cualquiera</button>
+      <button class="${randFilters.tipo==='repeticiones'?'on':''}" onclick="randFilters.tipo='repeticiones';render()">Repeticiones</button>
+      <button class="${randFilters.tipo==='tiempo'?'on':''}" onclick="randFilters.tipo='tiempo';render()">Tiempo</button>
+    </div>
+    <label class="field-label">Implementos</label>
+    <div class="seg">
+      <button class="${randFilters.implementos===''?'on':''}" onclick="randFilters.implementos='';render()">Cualquiera</button>
+      <button class="${randFilters.implementos==='con'?'on':''}" onclick="randFilters.implementos='con';render()">Con</button>
+      <button class="${randFilters.implementos==='sin'?'on':''}" onclick="randFilters.implementos='sin';render()">Sin</button>
+    </div>
+    <button class="btn btn-primary btn-block" style="margin-top:16px;" onclick="generarRutinaAleatoria()">🎲 Generar rutina</button>
+    <div id="rand-result" style="margin-top:16px;">${randResult?recuadroRutinaHtml(randResult,{titulo:'Rutina aleatoria', onOpen:'abrirRandDetalle', onRegenerar:'generarRutinaAleatoria', onGuardar:'guardarRutinaGenerada'}):''}</div>
+  `;
+}
+function generarRutinaAleatoria(){
+  const pool = filtrarEjerciciosPara(randFilters);
+  if(!pool.length){ alert('No hay ejercicios en tu biblioteca que coincidan con esos filtros.'); return; }
+  const shuffled = pool.slice().sort(()=>Math.random()-0.5).slice(0, randFilters.cantidad);
+  randResult = shuffled.map(e=>ejercicioAItem(e));
+  render();
+}
+function abrirRandDetalle(){
+  if(!randResult) return;
+  abrirDetalleRutinaGenerada(randResult, {titulo:'Rutina aleatoria', onRegenerar:'generarRutinaAleatoria', onGuardar:'guardarRutinaGenerada'});
+}
+async function guardarRutinaGenerada(){
+  if(!randResult) return;
+  const nombre = prompt('Nombre para esta rutina:', 'Rutina '+new Date().toLocaleDateString('es-MX'));
+  if(!nombre) return;
+  DB.rutinas.push({id:uid(), nombre, tipo:'aleatoria', items:randResult, nivel:randFilters.nivel, createdAt:new Date().toISOString()});
+  await persist('rutinas');
+  closeModal();
+  alert('Rutina guardada ✅ Puedes verla en "Mis rutinas".');
+}
+
+// --- Rutina personalizada ---
+let persFilters = {categoria:'', subcategoria:'', implementos:''};
+let persSeleccion = {}; // id -> {series,valor,tipo,descansoSerie,descansoFinal}
+function renderRutinaPersonalizada(tabsHtml){
+  let pool = DB.ejercicios.slice();
+  if(persFilters.categoria) pool = pool.filter(e=>e.categoria===persFilters.categoria);
+  if(persFilters.subcategoria) pool = pool.filter(e=>e.subcategoria===persFilters.subcategoria);
+  if(persFilters.implementos==='con') pool = pool.filter(e=>e.implementos&&e.implementos.length);
+  if(persFilters.implementos==='sin') pool = pool.filter(e=>!(e.implementos&&e.implementos.length));
+
+  const rows = pool.map(e=>{
+    const sel = persSeleccion[e.id];
+    return `
+    <div class="checkline ${sel?'picked':''}" style="align-items:flex-start;flex-direction:column;">
+      <div class="row" style="width:100%;cursor:pointer;" onclick="togglePersSel('${e.id}')">
+        <input type="checkbox" ${sel?'checked':''} onclick="event.stopPropagation();togglePersSel('${e.id}')">
+        <div class="txt">${escapeHtml(e.nombre)} <span class="muted" style="font-size:11px;">· ${e.categoria||'—'}</span></div>
+      </div>
+      ${sel?`
+      <div class="row" style="width:100%;gap:8px;margin-top:8px;">
+        <div style="flex:1;">
+          <label class="field-label" style="margin:0 0 4px;">Series</label>
+          <input type="number" value="${sel.series}" onchange="persSeleccion['${e.id}'].series=Number(this.value)||1">
+        </div>
+        <div style="flex:1;">
+          <label class="field-label" style="margin:0 0 4px;">${sel.tipo==='tiempo'?'Segundos':'Reps'}</label>
+          <input type="number" value="${sel.valor}" onchange="persSeleccion['${e.id}'].valor=Number(this.value)||0">
+        </div>
+        <div style="flex:1;">
+          <label class="field-label" style="margin:0 0 4px;">Descanso (s)</label>
+          <input type="number" value="${sel.descansoSerie}" onchange="persSeleccion['${e.id}'].descansoSerie=Number(this.value)||0">
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join('') || `<div class="empty-state">No hay ejercicios con esos filtros.</div>`;
+
+  const seleccionCount = Object.keys(persSeleccion).length;
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="filters-row">
+      <select onchange="persFilters.categoria=this.value;persFilters.subcategoria='';render()">
+        <option value="">Categoría: todas</option>
+        ${ejCategorias().map(c=>`<option value="${c}" ${persFilters.categoria===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <select onchange="persFilters.subcategoria=this.value;render()">
+        <option value="">Subcategoría: todas</option>
+        ${ejSubcategorias(persFilters.categoria).map(c=>`<option value="${c}" ${persFilters.subcategoria===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <select onchange="persFilters.implementos=this.value;render()">
+        <option value="">Implementos: todos</option>
+        <option value="con" ${persFilters.implementos==='con'?'selected':''}>Con</option>
+        <option value="sin" ${persFilters.implementos==='sin'?'selected':''}>Sin</option>
+      </select>
+    </div>
+    <div class="list">${rows}</div>
+    <div class="hint">${seleccionCount} ejercicio(s) seleccionados · define series y repeticiones para cada uno</div>
+    <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="guardarRutinaPersonalizada()" ${seleccionCount?'':'disabled'}>Guardar rutina personalizada</button>
+  `;
+}
+function togglePersSel(id){
+  if(persSeleccion[id]) delete persSeleccion[id];
+  else{
+    const e = DB.ejercicios.find(x=>x.id===id);
+    persSeleccion[id] = ejercicioAItem(e);
+  }
+  render();
+}
+async function guardarRutinaPersonalizada(){
+  const nombre = prompt('Nombre para esta rutina personalizada:');
+  if(!nombre) return;
+  const items = Object.keys(persSeleccion).map(id=>Object.assign({id}, persSeleccion[id]));
+  DB.rutinas.push({id:uid(), nombre, tipo:'personalizada', items, createdAt:new Date().toISOString()});
+  persSeleccion = {};
+  await persist('rutinas');
+  alert('Rutina guardada ✅ Puedes verla en "Mis rutinas".');
+  render();
+}
+
+// --- Mis rutinas (guardadas: aleatorias + personalizadas) ---
+function renderMisRutinas(tabsHtml){
+  const list = DB.rutinas.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  const rows = list.map(r=>{
+    const badge = r.tipo==='aleatoria'?{c:'accent',l:'🎲 Aleatoria'}:r.tipo==='niveles'?{c:'purple',l:'📶 Niveles '+(r.nivelVueltas||1)}:r.tipo==='baloncesto'?{c:'orange',l:'🏀 Cancha'}:{c:'teal',l:'✅ Personalizada'};
+    const minutos = r.tipo==='niveles' ? estimarMinutosNiveles(r.items||[], r.nivelVueltas||1) : estimarMinutos(r.items||[]);
+    return `
+    <div class="card" onclick="verRutinaGuardada('${r.id}')" style="cursor:pointer;">
+      <div class="row-between"><b>${escapeHtml(r.nombre)}</b><span class="pill ${badge.c}">${badge.l}</span></div>
+      <div class="hint">${(r.items||[]).length} ejercicios · ~${minutos} min · ${r.createdAt?new Date(r.createdAt).toLocaleDateString('es-MX'):''}</div>
+    </div>`;}).join('') || `<div class="empty-state"><span class="ic">📋</span>Aún no has guardado rutinas.<br>Genera una aleatoria o personalizada y guárdala.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+}
+function verRutinaGuardada(id){
+  const r = DB.rutinas.find(x=>x.id===id); if(!r) return;
+  const esNiveles = r.tipo==='niveles';
+  const lista = esNiveles
+    ? `<div class="hint" style="margin-bottom:8px;">Nivel ${r.nivelVueltas||1} de 7 · ${r.nivelVueltas||1} vuelta(s) al circuito · descanso 180s entre vueltas · 0s entre ejercicios</div>
+       <div class="list">${(r.items||[]).map((it,i)=>{
+         const e = DB.ejercicios.find(x=>x.id===it.id);
+         return `<div class="card"><div class="row-between"><b>${i+1}. ${escapeHtml(e?e.nombre:'(eliminado)')}</b></div><div class="hint">${it.tipo==='tiempo'?it.valor+' s':it.valor+' reps'} por vuelta</div></div>`;
+       }).join('')}</div>`
+    : `<div class="list">${(r.items||[]).map(itemLineHtml).join('')}</div>`;
+  openModal(escapeHtml(r.nombre), `
+    ${lista}
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="imprimirRutina('${r.id}')">🖨️ Descargar PDF</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-block" onclick="eliminarRutinaGuardada('${r.id}')">Eliminar rutina</button>
+    </div>
+  `);
+}
+async function eliminarRutinaGuardada(id){
+  DB.rutinas = DB.rutinas.filter(x=>x.id!==id);
+  await persist('rutinas');
+  closeModal(); render();
+}
+
+/* ================= DESCARGA EN PDF DE RUTINAS ================= */
+function imprimirRutina(id){
+  const r = DB.rutinas.find(x=>x.id===id); if(!r) return;
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    alert('El generador de PDF no cargó. Revisa tu conexión a internet e intenta de nuevo.');
+    return;
+  }
+  const esNiveles = r.tipo==='niveles';
+  const items = r.items||[];
+  let head, rows;
+  if(esNiveles){
+    head = [['#','Ejercicio','Cantidad']];
+    rows = items.map((it,i)=>{
+      const e = DB.ejercicios.find(x=>x.id===it.id);
+      return [String(i+1), e?e.nombre:'—', it.tipo==='tiempo'?it.valor+' s':it.valor+' reps'];
+    });
+  } else {
+    head = [['#','Ejercicio','Series','Reps/Tiempo','Descanso']];
+    rows = items.map((it,i)=>{
+      const e = DB.ejercicios.find(x=>x.id===it.id);
+      return [String(i+1), e?e.nombre:'—', String(it.series), it.tipo==='tiempo'?it.valor+' s':it.valor+' reps', (it.descansoSerie||0)+'s'];
+    });
+  }
+  const minutos = esNiveles ? estimarMinutosNiveles(items, r.nivelVueltas||1) : estimarMinutos(items);
+  const subt = esNiveles
+    ? `Nivel ${r.nivelVueltas||1} de 7 · ${r.nivelVueltas||1} vuelta(s) · descanso 180s entre vueltas, 0s entre ejercicios`
+    : `${items.length} ejercicio(s)`;
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(20);
+    doc.text(r.nombre, 14, 18);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(120);
+    doc.text('Coach Laguna', 196, 14, {align:'right'});
+    doc.setFontSize(10.5); doc.setTextColor(70);
+    doc.text(`${subt} - ~${minutos} min aprox. - ${new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})}`, 14, 25);
+    doc.autoTable({
+      startY: 30, head, body: rows, theme:'grid',
+      headStyles:{fillColor:[142,124,195], textColor:255},
+      styles:{fontSize:10, cellPadding:3}
+    });
+    const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 30;
+    doc.setFontSize(9); doc.setTextColor(150);
+    doc.text('Generado desde tu app de entrenamiento.', 14, finalY + 10);
+    const filename = 'Rutina - ' + r.nombre.replace(/[\\/:*?"<>|]/g,'').trim() + '.pdf';
+    doc.save(filename);
+  }catch(err){
+    console.error(err);
+    alert('No se pudo generar el PDF: ' + (err && err.message ? err.message : 'intenta de nuevo'));
+  }
+}
+
+/* ================= CANCHA: SESIÓN DE TIRO + RUTINA DE BALONCESTO ================= */
+function calcularZonaTiro(x,y){
+  const dist = Math.hypot(x-150, y-55);
+  if(dist>175) return 'triple';
+  if(x>=105 && x<=195 && y<=215) return 'pintura';
+  return 'media';
+}
+function courtSvgMarkup(dots, interactive){
+  const dotsHtml = (dots||[]).map(d=>`<circle class="shot-dot ${d.made?'make':'miss'}" cx="${d.x}" cy="${d.y}" r="6"></circle>`).join('');
+  return `
+  <svg class="court-svg${interactive?' interactive':''}" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" ${interactive?`onclick="registrarTiro(event,this)"`:''}>
+    <rect x="4" y="4" width="292" height="312" rx="6" style="fill:var(--surface-2);stroke:var(--line);stroke-width:2;"></rect>
+    <rect x="105" y="55" width="90" height="160" style="fill:none;stroke:var(--accent-dim);stroke-width:2;"></rect>
+    <circle cx="150" cy="215" r="45" style="fill:none;stroke:var(--accent-dim);stroke-width:2;stroke-dasharray:5,4;"></circle>
+    <line x1="122" y1="40" x2="178" y2="40" style="stroke:var(--text);stroke-width:4;"></line>
+    <circle cx="150" cy="55" r="6" style="fill:none;stroke:var(--text);stroke-width:3;"></circle>
+    <path d="M 25 320 L 25 100 A 175 175 0 0 1 275 100 L 275 320" style="fill:none;stroke:var(--accent-dim);stroke-width:2;"></path>
+    ${dotsHtml}
+  </svg>`;
+}
+let tiroModoActual = 'make';
+let tiroActual = [];
+let canchaSel = {};
+function tiroStatsDe(tiros){
+  const total = tiros.length;
+  const makes = tiros.filter(t=>t.made).length;
+  const pct = total? Math.round(makes/total*100) : 0;
+  const porZona = z => {
+    const enZona = tiros.filter(t=>t.zona===z);
+    const m = enZona.filter(t=>t.made).length;
+    return enZona.length? `${m}/${enZona.length}` : '—';
+  };
+  return {total, makes, pct, pintura:porZona('pintura'), media:porZona('media'), triple:porZona('triple')};
+}
+function renderCancha(tabsHtml){
+  const st = tiroStatsDe(tiroActual);
+  const historial = DB.tiroSesiones.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  const histHtml = historial.slice(0,8).map(s=>{
+    const hs = tiroStatsDe(s.tiros||[]);
+    return `<div class="sesion-item" onclick="verSesionTiro('${s.id}')">
+      <div class="row-between"><b>${humanDate(s.fecha)}</b><span class="pill accent">${hs.pct}% (${hs.makes}/${hs.total})</span></div>
+    </div>`;
+  }).join('') || `<div class="hint">Aún no guardas sesiones de tiro.</div>`;
+
+  const poolCancha = DB.ejercicios.filter(e=>e.categoria==='Baloncesto');
+  const rowsCancha = poolCancha.map(e=>{
+    const sel = canchaSel[e.id];
+    return `<div class="checkline ${sel?'picked':''}" style="align-items:flex-start;flex-direction:column;">
+      <div class="row" style="width:100%;cursor:pointer;" onclick="toggleCanchaSel('${e.id}')">
+        <input type="checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleCanchaSel('${e.id}')">
+        <div class="txt">${escapeHtml(e.nombre)} <span class="muted" style="font-size:11px;">· ${e.subcategoria||''}</span></div>
+      </div>
+      ${sel?`<div class="row" style="width:100%;gap:8px;margin-top:8px;">
+        <div style="flex:1;"><label class="field-label" style="margin:0 0 4px;">Series</label><input type="number" value="${sel.series}" onchange="canchaSel['${e.id}'].series=Number(this.value)||1"></div>
+        <div style="flex:1;"><label class="field-label" style="margin:0 0 4px;">${sel.tipo==='tiempo'?'Segundos':'Reps'}</label><input type="number" value="${sel.valor}" onchange="canchaSel['${e.id}'].valor=Number(this.value)||0"></div>
+        <div style="flex:1;"><label class="field-label" style="margin:0 0 4px;">Descanso (s)</label><input type="number" value="${sel.descansoSerie}" onchange="canchaSel['${e.id}'].descansoSerie=Number(this.value)||0"></div>
+      </div>`:''}
+    </div>`;
+  }).join('') || `<div class="empty-state">Aún no tienes ejercicios con categoría "Baloncesto".<br>Agrégalos en "Agregar ejercicio" usando esa categoría.</div>`;
+  const canchaCount = Object.keys(canchaSel).length;
+
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="section-title">Sesión de tiro</div>
+    <div class="section-sub">Marca en la cancha dónde tiraste y si anotaste, para llevar tu estadística.</div>
+    <div class="tiro-toggle">
+      <button class="make ${tiroModoActual==='make'?'on':''}" onclick="tiroModoActual='make';render()">🟢 Anotado</button>
+      <button class="miss ${tiroModoActual==='miss'?'on':''}" onclick="tiroModoActual='miss';render()">🔴 Fallado</button>
+    </div>
+    <div class="court-wrap">${courtSvgMarkup(tiroActual, true)}</div>
+    <div class="tiro-stats">
+      <div class="stat-box"><div class="num">${st.pct}%</div><div class="lbl">GENERAL</div></div>
+      <div class="stat-box"><div class="num">${st.pintura}</div><div class="lbl">PINTURA</div></div>
+      <div class="stat-box"><div class="num">${st.media}</div><div class="lbl">MEDIA</div></div>
+      <div class="stat-box"><div class="num">${st.triple}</div><div class="lbl">TRIPLE</div></div>
+    </div>
+    <div class="hint" style="margin-top:8px;">${st.total} tiro(s) registrados en esta sesión · ${st.makes} anotados</div>
+    <div class="tiro-actions">
+      <button class="btn btn-ghost" onclick="deshacerTiro()" ${st.total?'':'disabled'}>↩️ Deshacer</button>
+      <button class="btn btn-ghost" onclick="nuevaSesionTiro()" ${st.total?'':'disabled'}>🗑️ Limpiar</button>
+      <button class="btn btn-primary" onclick="guardarSesionTiro()" ${st.total?'':'disabled'}>💾 Guardar</button>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title" style="font-size:16px;">Sesiones anteriores</div>
+    <div class="list" style="margin-top:8px;">${histHtml}</div>
+
+    <div class="divider"></div>
+    <div class="section-title">Crear rutina de baloncesto</div>
+    <div class="section-sub">Arma una rutina solo con tus ejercicios de baloncesto (categoría "Baloncesto").</div>
+    <div class="court-wrap" style="max-width:190px;margin:0 auto 14px;">${courtSvgMarkup([], false)}</div>
+    <div class="list">${rowsCancha}</div>
+    <div class="hint">${canchaCount} ejercicio(s) seleccionados</div>
+    <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="guardarRutinaCancha()" ${canchaCount?'':'disabled'}>Guardar rutina de baloncesto</button>
+  `;
+}
+function registrarTiro(evt, svgEl){
+  const rect = svgEl.getBoundingClientRect();
+  const vb = svgEl.viewBox.baseVal;
+  const x = (evt.clientX-rect.left)/rect.width*vb.width;
+  const y = (evt.clientY-rect.top)/rect.height*vb.height;
+  const zona = calcularZonaTiro(x,y);
+  tiroActual.push({x:Math.round(x), y:Math.round(y), made: tiroModoActual==='make', zona});
+  render();
+}
+function deshacerTiro(){ tiroActual.pop(); render(); }
+function nuevaSesionTiro(){ tiroActual=[]; render(); }
+async function guardarSesionTiro(){
+  if(!tiroActual.length) return;
+  DB.tiroSesiones.push({id:uid(), fecha:todayStr(), tiros:tiroActual, createdAt:new Date().toISOString()});
+  await persist('tiroSesiones');
+  tiroActual = [];
+  alert('Sesión de tiro guardada ✅');
+  render();
+}
+function verSesionTiro(id){
+  const s = DB.tiroSesiones.find(x=>x.id===id); if(!s) return;
+  const st = tiroStatsDe(s.tiros||[]);
+  openModal(humanDate(s.fecha), `
+    <div class="court-wrap">${courtSvgMarkup(s.tiros||[], false)}</div>
+    <div class="tiro-stats">
+      <div class="stat-box"><div class="num">${st.pct}%</div><div class="lbl">GENERAL</div></div>
+      <div class="stat-box"><div class="num">${st.pintura}</div><div class="lbl">PINTURA</div></div>
+      <div class="stat-box"><div class="num">${st.media}</div><div class="lbl">MEDIA</div></div>
+      <div class="stat-box"><div class="num">${st.triple}</div><div class="lbl">TRIPLE</div></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-danger btn-block" onclick="eliminarSesionTiro('${s.id}')">Eliminar sesión</button></div>
+  `);
+}
+async function eliminarSesionTiro(id){
+  DB.tiroSesiones = DB.tiroSesiones.filter(x=>x.id!==id);
+  await persist('tiroSesiones');
+  closeModal(); render();
+}
+function toggleCanchaSel(id){
+  if(canchaSel[id]) delete canchaSel[id];
+  else{ const e = DB.ejercicios.find(x=>x.id===id); canchaSel[id] = ejercicioAItem(e); }
+  render();
+}
+async function guardarRutinaCancha(){
+  const nombre = prompt('Nombre para esta rutina de baloncesto:', 'Baloncesto '+new Date().toLocaleDateString('es-MX'));
+  if(!nombre) return;
+  const items = Object.keys(canchaSel).map(id=>Object.assign({id}, canchaSel[id]));
+  DB.rutinas.push({id:uid(), nombre, tipo:'baloncesto', items, createdAt:new Date().toISOString()});
+  canchaSel = {};
+  await persist('rutinas');
+  alert('Rutina de baloncesto guardada ✅ Puedes verla en "Mis rutinas".');
+  render();
+}
+
+/* ================= NIVELES (estilo Darebee, flyers + circuito por vueltas) ================= */
+let nivelesSel = {};
+let nivelesVueltas = 3;
+let nivelesFiltro = '';
+function estimarMinutosNiveles(items, vueltas){
+  const perLap = items.reduce((s,it)=> s + (it.tipo==='tiempo'?(Number(it.valor)||0):0), 0);
+  const total = perLap*vueltas + Math.max(0,vueltas-1)*180;
+  return Math.max(1, Math.round(total/60));
+}
+function renderNiveles(tabsHtml){
+  let pool = DB.ejercicios.slice();
+  if(nivelesFiltro) pool = pool.filter(e=>e.categoria===nivelesFiltro);
+  const cats = ejCategorias();
+  const cards = pool.map(e=>{
+    const sel = nivelesSel[e.id];
+    return `<div class="flyer-card ${sel?'sel':''}" onclick="toggleNivelSel('${e.id}')">
+      ${e.foto?`<img src="${e.foto}">`:`<div class="flyer-noimg">🏀</div>`}
+      ${sel?`<div class="flyer-check">✓</div>`:''}
+      <div class="flyer-overlay"><div class="flyer-name">${escapeHtml(e.nombre)}</div></div>
+    </div>`;
+  }).join('') || `<div class="empty-state" style="grid-column:1/-1;">No hay ejercicios en tu biblioteca todavía.<br>Sube imágenes en "Agregar ejercicio".</div>`;
+
+  const circuito = Object.keys(nivelesSel).map(id=>{
+    const e = DB.ejercicios.find(x=>x.id===id);
+    const it = nivelesSel[id];
+    if(!e) return '';
+    return `<div class="circuito-item">
+      <div class="ci-name">${escapeHtml(e.nombre)}</div>
+      <input type="number" value="${it.valor}" onchange="nivelesSel['${id}'].valor=Number(this.value)||0">
+      <span class="muted" style="font-size:11px;">${it.tipo==='tiempo'?'s':'reps'}</span>
+      <button class="icon-btn danger" onclick="toggleNivelSel('${id}')">✕</button>
+    </div>`;
+  }).join('');
+  const totalSel = Object.keys(nivelesSel).length;
+  const minutos = totalSel? estimarMinutosNiveles(Object.keys(nivelesSel).map(id=>Object.assign({id},nivelesSel[id])), nivelesVueltas) : 0;
+
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="section-title">Niveles</div>
+    <div class="section-sub">Elige ejercicios para tu circuito, estilo Darebee. El nivel (1–7) define cuántas vueltas le das: 3 min de descanso entre vueltas, 0 entre ejercicios.</div>
+    <div class="filters-row">
+      <select onchange="nivelesFiltro=this.value;render()">
+        <option value="">Categoría: todas</option>
+        ${cats.map(c=>`<option value="${c}" ${nivelesFiltro===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div class="flyer-grid">${cards}</div>
+
+    ${totalSel?`
+    <div class="divider"></div>
+    <div class="section-title" style="font-size:16px;">Tu circuito (${totalSel})</div>
+    <div class="list">${circuito}</div>
+
+    <label class="field-label">Nivel (1 a 7 vueltas)</label>
+    <div class="lvl-grid">${[1,2,3,4,5,6,7].map(n=>`<button class="${nivelesVueltas===n?'on':''}" onclick="nivelesVueltas=${n};render()">${n}</button>`).join('')}</div>
+    <div class="hint">${nivelesVueltas} vuelta(s) al circuito · ~${minutos} min aprox. · 180s de descanso entre vueltas</div>
+
+    <button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="guardarRutinaNiveles()">💾 Guardar rutina de niveles</button>
+    `:''}
+  `;
+}
+function toggleNivelSel(id){
+  if(nivelesSel[id]) delete nivelesSel[id];
+  else{
+    const e = DB.ejercicios.find(x=>x.id===id);
+    nivelesSel[id] = {tipo:e.tipo, valor:e.valor};
+  }
+  render();
+}
+async function guardarRutinaNiveles(){
+  const nombre = prompt('Nombre para esta rutina de niveles:', 'Nivel '+nivelesVueltas+' - '+new Date().toLocaleDateString('es-MX'));
+  if(!nombre) return;
+  const items = Object.keys(nivelesSel).map(id=>({id, tipo:nivelesSel[id].tipo, valor:nivelesSel[id].valor}));
+  DB.rutinas.push({id:uid(), nombre, tipo:'niveles', nivelVueltas:nivelesVueltas, items, createdAt:new Date().toISOString()});
+  nivelesSel = {}; nivelesVueltas = 3;
+  await persist('rutinas');
+  alert('Rutina de niveles guardada ✅ Puedes verla en "Mis rutinas".');
+  goto('atleta','misrutinas');
+}
+
+/* ================= ENTRENAR: cronómetro + reproductor + ejercicio sorpresa ================= */
+let swSeconds = 0, swRunning = false, swTimerId = null;
+function swFmt(s){ const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+function swToggle(){
+  swRunning = !swRunning;
+  if(swRunning){
+    swTimerId = setInterval(()=>{ swSeconds++; const el=document.getElementById('sw-display'); if(el) el.textContent = swFmt(swSeconds); }, 1000);
+  } else {
+    clearInterval(swTimerId);
+  }
+  render();
+}
+function swReset(){ swSeconds=0; swRunning=false; clearInterval(swTimerId); render(); }
+
+let sorpresaActual = null;
+function generarSorpresa(){
+  if(!DB.ejercicios.length){ alert('Agrega ejercicios a tu biblioteca primero.'); return; }
+  const e = DB.ejercicios[Math.floor(Math.random()*DB.ejercicios.length)];
+  const base = Number(e.valor)||10;
+  const variacion = Math.round(base*0.4)+1;
+  const valor = Math.max(3, base + Math.floor(Math.random()*variacion*2) - variacion);
+  sorpresaActual = {nombre:e.nombre, tipo:e.tipo, valor};
+  render();
+}
+
+let playerRutinaId = '';
+let playerPasos = null, playerIdx = 0, playerTimerId = null, playerRestante = 0;
+function construirPasos(r){
+  const pasos = [];
+  if(r.tipo==='niveles'){
+    const vueltas = r.nivelVueltas||1;
+    for(let v=0; v<vueltas; v++){
+      (r.items||[]).forEach(it=>{
+        const e = DB.ejercicios.find(x=>x.id===it.id);
+        pasos.push({tipo:'ejercicio', nombre:e?e.nombre:'—', modo:it.tipo, valor:it.valor});
+      });
+      if(v<vueltas-1) pasos.push({tipo:'descanso', valor:180, nota:'Descanso entre vueltas'});
+    }
+  } else {
+    (r.items||[]).forEach((it,i)=>{
+      const e = DB.ejercicios.find(x=>x.id===it.id);
+      const series = Number(it.series)||1;
+      for(let s=0; s<series; s++){
+        pasos.push({tipo:'ejercicio', nombre:e?e.nombre:'—', modo:it.tipo, valor:it.valor});
+        if(s<series-1 && it.descansoSerie) pasos.push({tipo:'descanso', valor:it.descansoSerie, nota:'Descanso entre series'});
+      }
+      if(it.descansoFinal && i<(r.items||[]).length-1) pasos.push({tipo:'descanso', valor:it.descansoFinal, nota:'Descanso'});
+    });
+  }
+  return pasos;
+}
+function iniciarReproduccion(){
+  if(!playerRutinaId) return;
+  const r = DB.rutinas.find(x=>x.id===playerRutinaId); if(!r) return;
+  playerPasos = construirPasos(r);
+  playerIdx = 0;
+  if(!playerPasos.length){ alert('Esta rutina no tiene pasos.'); playerPasos=null; return; }
+  arrancarPaso();
+  render();
+}
+function arrancarPaso(){
+  clearInterval(playerTimerId);
+  const paso = playerPasos[playerIdx];
+  if(!paso) return;
+  if(paso.tipo==='descanso' || paso.modo==='tiempo'){
+    playerRestante = paso.valor;
+    playerTimerId = setInterval(()=>{
+      playerRestante--;
+      const el = document.getElementById('player-big');
+      if(el) el.textContent = playerRestante;
+      if(playerRestante<=0){
+        clearInterval(playerTimerId);
+        if(navigator.vibrate) navigator.vibrate(200);
+        siguientePaso();
+      }
+    }, 1000);
+  }
+}
+function siguientePaso(){
+  playerIdx++;
+  if(!playerPasos || playerIdx>=playerPasos.length){ clearInterval(playerTimerId); playerPasos=null; alert('¡Rutina terminada! 💪'); render(); return; }
+  arrancarPaso();
+  render();
+}
+function detenerReproduccion(){ clearInterval(playerTimerId); playerPasos=null; playerIdx=0; render(); }
+
+function renderEntrenar(tabsHtml){
+  const opcionesRutinas = DB.rutinas.map(r=>`<option value="${r.id}" ${playerRutinaId===r.id?'selected':''}>${escapeHtml(r.nombre)}</option>`).join('');
+  let playerHtml = '';
+  if(playerPasos){
+    const paso = playerPasos[playerIdx];
+    const restantes = playerPasos.length - playerIdx;
+    playerHtml = `
+      <div class="player-step">
+        <div class="ps-label">${paso.tipo==='descanso'?(paso.nota||'Descanso'):'Ejercicio'}</div>
+        <div class="ps-name">${paso.tipo==='descanso'?'😮\u200d💨 Respira':escapeHtml(paso.nombre)}</div>
+        <div class="ps-big" id="player-big">${(paso.tipo==='descanso'||paso.modo==='tiempo')?playerRestante:paso.valor}</div>
+        <div class="hint">${paso.tipo==='descanso'?'segundos de descanso':(paso.modo==='tiempo'?'segundos':'repeticiones')} · quedan ${restantes} paso(s)</div>
+        <div class="player-progress"><i style="width:${Math.round((playerIdx/playerPasos.length)*100)}%"></i></div>
+        ${(paso.tipo==='ejercicio' && paso.modo!=='tiempo')?`<button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="siguientePaso()">Listo, siguiente ›</button>`:''}
+      </div>
+      <button class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="detenerReproduccion()">Detener</button>
+    `;
+  } else {
+    playerHtml = `
+      <select id="player-select" onchange="playerRutinaId=this.value">
+        <option value="">Elige una rutina guardada…</option>
+        ${opcionesRutinas}
+      </select>
+      <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="playerRutinaId=document.getElementById('player-select').value;iniciarReproduccion()" ${DB.rutinas.length?'':'disabled'}>▶️ Iniciar rutina</button>
+      ${DB.rutinas.length?'':'<div class="hint">Guarda una rutina primero para poder reproducirla aquí.</div>'}
+    `;
+  }
+
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="section-title">Cronómetro</div>
+    <div class="section-sub">Para arrancar tu entrenamiento del día, sin más.</div>
+    <div class="stopwatch-face">
+      <div class="sw-time" id="sw-display">${swFmt(swSeconds)}</div>
+      <div class="sw-controls">
+        <button class="btn btn-primary" onclick="swToggle()">${swRunning?'⏸️ Pausar':'▶️ Iniciar'}</button>
+        <button class="btn btn-ghost" onclick="swReset()">↺ Reiniciar</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title" style="font-size:16px;">Reproducir una rutina</div>
+    <div class="section-sub">Te va guiando ejercicio por ejercicio con sus descansos.</div>
+    ${playerHtml}
+
+    <div class="divider"></div>
+    <div class="section-title" style="font-size:16px;">Ejercicio sorpresa</div>
+    <div class="section-sub">Para hacer algo rápido, al azar.</div>
+    ${sorpresaActual?`
+      <div class="surprise-card">
+        <div style="font-size:12px;opacity:.85;font-weight:700;">SALIÓ…</div>
+        <div class="sc-name">${escapeHtml(sorpresaActual.nombre)}</div>
+        <div class="sc-val">Haz ${sorpresaActual.valor} ${sorpresaActual.tipo==='tiempo'?'segundos':'repeticiones'}</div>
+      </div>
+    `:''}
+    <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="generarSorpresa()">🎲 ${sorpresaActual?'Otro':'Generar'} ejercicio sorpresa</button>
+  `;
+}
+
+/* ================= CREADOR DE CONTENIDO ================= */
+const CONT_TABS = [{k:'calendario',l:'Calendario'},{k:'ideas',l:'Ideas de video'},{k:'rutinaVideo',l:'Rutina para video'},{k:'temas',l:'Temas'}];
+RENDERERS.contenido = function(){
+  setTop('Creador de contenido', false);
+  const tabsHtml = `<div class="section-tabs">${CONT_TABS.map(t=>`<button class="${state.sub===t.k?'active':''}" onclick="goto('contenido','${t.k}')">${t.l}</button>`).join('')}</div>`;
+  if(state.sub==='calendario') renderContCalendario(tabsHtml);
+  else if(state.sub==='ideas') renderContIdeas(tabsHtml);
+  else if(state.sub==='rutinaVideo') renderContRutinaVideo(tabsHtml);
+  else renderContTemas(tabsHtml);
+};
+
+let contCalState = {year:new Date().getFullYear(), month:new Date().getMonth()};
+function renderContCalendario(tabsHtml){
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="section-sub">Toca un día para escribir la idea o plan de contenido de esa fecha.</div>
+    <div class="card">
+      ${monthGridHtml(contCalState.year, contCalState.month, {
+        navFn:'navContCal', clickFn:'openContDia',
+        dayDot:(ds)=> !!DB.contCalendario[ds]
+      })}
+    </div>
+  `;
+}
+function navContCal(dir){
+  contCalState.month += dir;
+  if(contCalState.month<0){ contCalState.month=11; contCalState.year--; }
+  if(contCalState.month>11){ contCalState.month=0; contCalState.year++; }
+  render();
+}
+function openContDia(ds){
+  openModal(humanDate(ds), `
+    <label class="field-label">Plan / idea de contenido</label>
+    <textarea id="cont-dia-txt" placeholder="Ej. Grabar reel de rutina de piernas...">${escapeHtml(DB.contCalendario[ds]||'')}</textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary btn-block" onclick="guardarContDia('${ds}')">Guardar</button>
+    </div>
+  `);
+}
+async function guardarContDia(ds){
+  const v = document.getElementById('cont-dia-txt').value.trim();
+  if(v) DB.contCalendario[ds]=v; else delete DB.contCalendario[ds];
+  await persist('contCalendario');
+  closeModal(); render();
+}
+
+const IDEA_ESTADOS = [{v:'idea',l:'Idea'},{v:'grabando',l:'Grabando'},{v:'editando',l:'Editando'},{v:'publicado',l:'Publicado'}];
+const IDEA_FIELDS = [
+  {key:'titulo', label:'Título', type:'text', ph:'Ej. 5 errores en sentadilla'},
+  {key:'descripcion', label:'Descripción / guion breve', type:'textarea'},
+  {key:'estado', label:'Estado', type:'select', options:IDEA_ESTADOS.map(o=>({v:o.v,l:o.l}))}
+];
+function renderContIdeas(tabsHtml){
+  const rows = DB.contIdeas.map(it=>`
+    <div class="card" onclick="openIdeaModal('${it.id}')" style="cursor:pointer;">
+      <div class="row-between"><b>${escapeHtml(it.titulo)}</b><span class="pill ${it.estado==='publicado'?'accent':''}">${IDEA_ESTADOS.find(e=>e.v===it.estado)?.l||it.estado}</span></div>
+      ${it.descripcion?`<div class="hint">${escapeHtml(it.descripcion.slice(0,80))}</div>`:''}
+    </div>`).join('') || `<div class="empty-state"><span class="ic">🎬</span>Sin ideas de video todavía.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+  setFab(true, ()=>openIdeaModal(null));
+}
+function openIdeaModal(id){
+  const data = id ? DB.contIdeas.find(x=>x.id===id) : {titulo:'',descripcion:'',estado:'idea'};
+  openModal(id?'Editar idea':'Nueva idea de video', entityForm(IDEA_FIELDS, data), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = async ()=>{
+        const vals = readFields(IDEA_FIELDS);
+        if(!vals.titulo.trim()){ alert('Ponle un título'); return; }
+        if(id){ Object.assign(data, vals); }
+        else DB.contIdeas.push(Object.assign({id:uid()}, vals));
+        await persist('contIdeas');
+        closeModal(); render();
+      };
+    }
+  });
+  if(id){
+    setTimeout(()=>{
+      const del = document.createElement('button');
+      del.className='btn btn-danger btn-block'; del.style.marginTop='8px'; del.textContent='Eliminar';
+      del.onclick = async ()=>{ DB.contIdeas = DB.contIdeas.filter(x=>x.id!==id); await persist('contIdeas'); closeModal(); render(); };
+      document.getElementById('modal-body').appendChild(del);
+    },0);
+  }
+}
+
+let vidFilters = {nivel:'', cantidad:5, tipo:'', implementos:''};
+let vidResult = null;
+function renderContRutinaVideo(tabsHtml){
+  const guardadas = DB.contRutinasVideo.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  const guardadasHtml = guardadas.map(r=>`
+    <div class="card" onclick="verRutinaVideoGuardada('${r.id}')" style="cursor:pointer;">
+      <div class="row-between"><b>🎬 ${escapeHtml(r.nombre)}</b><span class="pill accent">Ver todo ›</span></div>
+      <div class="hint">${(r.items||[]).length} ejercicios · ~${estimarMinutos(r.items||[])} min</div>
+    </div>`).join('') || `<div class="hint">Aún no has guardado rutinas para video.</div>`;
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="section-sub">Genera una rutina lista para grabar en video, con el mismo motor de la biblioteca de ejercicios.</div>
+    <label class="field-label">Nivel</label>
+    <div class="seg">${['','principiante','intermedio','avanzado'].map(v=>`<button class="${vidFilters.nivel===v?'on':''}" onclick="vidFilters.nivel='${v}';render()">${v||'Todos'}</button>`).join('')}</div>
+    <label class="field-label">Cantidad de ejercicios</label>
+    <input type="number" min="1" max="10" value="${vidFilters.cantidad}" onchange="vidFilters.cantidad=Math.max(1,Math.min(10,Number(this.value)||1));">
+    <label class="field-label">Implementos</label>
+    <div class="seg">
+      <button class="${vidFilters.implementos===''?'on':''}" onclick="vidFilters.implementos='';render()">Cualquiera</button>
+      <button class="${vidFilters.implementos==='con'?'on':''}" onclick="vidFilters.implementos='con';render()">Con</button>
+      <button class="${vidFilters.implementos==='sin'?'on':''}" onclick="vidFilters.implementos='sin';render()">Sin</button>
+    </div>
+    <button class="btn btn-primary btn-block" style="margin-top:16px;" onclick="generarRutinaVideo()">🎬 Generar</button>
+    <div id="vid-result" style="margin-top:16px;">${vidResult?recuadroRutinaHtml(vidResult,{titulo:'Rutina para video', icono:'🎬', onOpen:'abrirVidDetalle', onRegenerar:'generarRutinaVideo'}):''}</div>
+    <div class="divider"></div>
+    <div class="section-sub">Rutinas para video guardadas</div>
+    <div class="list">${guardadasHtml}</div>
+  `;
+}
+function generarRutinaVideo(){
+  const pool = filtrarEjerciciosPara(vidFilters);
+  if(!pool.length){ alert('No hay ejercicios que coincidan con esos filtros.'); return; }
+  vidResult = pool.slice().sort(()=>Math.random()-0.5).slice(0, vidFilters.cantidad).map(e=>ejercicioAItem(e));
+  render();
+}
+function abrirVidDetalle(){
+  if(!vidResult) return;
+  openModal('Rutina para video', `
+    <div class="list">${vidResult.map(itemLineHtml).join('')}</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal();generarRutinaVideo()">🔄 Volver a generar</button>
+      <button class="btn btn-primary btn-block" onclick="copiarGuionVideo()">Copiar guion</button>
+    </div>
+    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="guardarRutinaVideo()">💾 Guardar rutina</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="closeModal()">No guardar</button>
+  `);
+}
+function copiarGuionVideo(){
+  const txt = vidResult.map((it,i)=>{
+    const e = DB.ejercicios.find(x=>x.id===it.id);
+    return `${i+1}. ${e?e.nombre:''} — ${it.series} series de ${it.tipo==='tiempo'?it.valor+' seg':it.valor+' reps'} (descanso ${it.descansoSerie||0}s)`;
+  }).join('\n');
+  navigator.clipboard?.writeText(txt).then(()=>alert('Guion copiado ✅')).catch(()=>alert(txt));
+}
+async function guardarRutinaVideo(){
+  if(!vidResult) return;
+  const nombre = prompt('Nombre para esta rutina de video:', 'Video '+new Date().toLocaleDateString('es-MX'));
+  if(!nombre) return;
+  DB.contRutinasVideo.push({id:uid(), nombre, items:vidResult, createdAt:new Date().toISOString()});
+  await persist('contRutinasVideo');
+  closeModal();
+  alert('Rutina guardada ✅');
+  render();
+}
+function verRutinaVideoGuardada(id){
+  const r = DB.contRutinasVideo.find(x=>x.id===id); if(!r) return;
+  openModal(escapeHtml(r.nombre), `
+    <div class="list">${(r.items||[]).map(itemLineHtml).join('')}</div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-block" onclick="eliminarRutinaVideoGuardada('${r.id}')">Eliminar</button>
+    </div>
+  `);
+}
+async function eliminarRutinaVideoGuardada(id){
+  DB.contRutinasVideo = DB.contRutinasVideo.filter(x=>x.id!==id);
+  await persist('contRutinasVideo');
+  closeModal(); render();
+}
+
+const TEMA_ESTADOS = [{v:'pendiente',l:'Pendiente'},{v:'en_desarrollo',l:'En desarrollo'},{v:'grabado',l:'Grabado'},{v:'publicado',l:'Publicado'}];
+const TEMA_FIELDS = [
+  {key:'tema', label:'Tema de publicación', type:'text', ph:'Ej. Mitos del ayuno intermitente'},
+  {key:'tipo', label:'Formato', type:'select', options:[{v:'video',l:'Video'},{v:'texto+imagen',l:'Texto + imagen'}]},
+  {key:'estado', label:'Estado', type:'select', options:TEMA_ESTADOS.map(o=>({v:o.v,l:o.l}))},
+  {key:'fechaPlan', label:'Fecha planeada', type:'date'},
+  {key:'descripcion', label:'Descripción / puntos a cubrir', type:'textarea'}
+];
+function renderContTemas(tabsHtml){
+  const rows = DB.contTemas.map(it=>`
+    <div class="row-between card" onclick="openTemaDetalle('${it.id}')" style="cursor:pointer;">
+      <div><b>${escapeHtml(it.tema)}</b><div class="hint">${it.tipo==='video'?'🎥 Video':'🖼️ Texto + imagen'} · ${TEMA_ESTADOS.find(e=>e.v===it.estado)?.l||'Pendiente'}</div></div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">💡</span>Sin temas guardados.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+  setFab(true, ()=>openTemaModal());
+}
+function openTemaDetalle(id){
+  const it = DB.contTemas.find(x=>x.id===id); if(!it) return;
+  openModal(escapeHtml(it.tema), `
+    <div class="chip-row">
+      <span class="pill accent">${it.tipo==='video'?'🎥 Video':'🖼️ Texto + imagen'}</span>
+      <span class="pill teal">${TEMA_ESTADOS.find(e=>e.v===it.estado)?.l||'Pendiente'}</span>
+      ${it.fechaPlan?`<span class="pill">${humanDate(it.fechaPlan)}</span>`:''}
+    </div>
+    ${it.descripcion?`<div class="card" style="margin-top:12px;">${escapeHtml(it.descripcion)}</div>`:`<div class="hint" style="margin-top:12px;">Sin descripción todavía.</div>`}
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="openTemaModal('${it.id}')">Editar</button>
+      <button class="btn btn-danger btn-block" onclick="deleteTema('${it.id}')">Eliminar</button>
+    </div>
+  `);
+}
+function openTemaModal(id){
+  const data = id ? DB.contTemas.find(x=>x.id===id) : {tema:'',tipo:'video',estado:'pendiente',fechaPlan:'',descripcion:''};
+  openModal(id?'Editar tema':'Nuevo tema', entityForm(TEMA_FIELDS, data), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = async ()=>{
+        const vals = readFields(TEMA_FIELDS);
+        if(!vals.tema.trim()){ alert('Escribe el tema'); return; }
+        if(id) Object.assign(data, vals);
+        else DB.contTemas.push(Object.assign({id:uid()}, vals));
+        await persist('contTemas');
+        closeModal(); render();
+      };
+    }
+  });
+}
+async function deleteTema(id){ DB.contTemas = DB.contTemas.filter(x=>x.id!==id); await persist('contTemas'); closeModal(); render(); }
+
+/* ================= TRABAJO (Uber) ================= */
+const TRAB_TABS = [{k:'resumen',l:'Resumen'},{k:'turnos',l:'Turnos'},{k:'metas',l:'Metas'},{k:'mantenimiento',l:'Mantenimiento'}];
+RENDERERS.trabajo = function(){
+  setTop('Trabajo', false);
+  const tabsHtml = `<div class="section-tabs">${TRAB_TABS.map(t=>`<button class="${state.sub===t.k?'active':''}" onclick="goto('trabajo','${t.k}')">${t.l}</button>`).join('')}</div>`;
+  if(state.sub==='resumen') renderTrabResumen(tabsHtml);
+  else if(state.sub==='turnos') renderTrabTurnos(tabsHtml);
+  else if(state.sub==='metas') renderTrabMetas(tabsHtml);
+  else renderTrabMant(tabsHtml);
+};
+function turnosDeRango(desde){
+  return DB.trabajoTurnos.filter(t=>t.fecha>=desde);
+}
+function inicioSemana(){ const d=new Date(); const off=(d.getDay()+6)%7; return addDays(todayStr(), -off); }
+function inicioMes(){ return todayStr().slice(0,8)+'01'; }
+function renderTrabResumen(tabsHtml){
+  const hoy = turnosDeRango(todayStr());
+  const semana = turnosDeRango(inicioSemana());
+  const mes = turnosDeRango(inicioMes());
+  const sum = (arr,k)=> arr.reduce((s,t)=>s+(Number(t[k])||0),0);
+  const ingresosHoy = sum(hoy,'ingresos');
+  const ingresosSemana = sum(semana,'ingresos'), ingresosMes = sum(mes,'ingresos');
+  const horasMes = sum(mes,'horas'), gasolinaMes = sum(mes,'gasolina'), kmMes = sum(mes,'km');
+  const porHora = horasMes ? (ingresosMes/horasMes).toFixed(1) : '0';
+  const metaDia = Number(DB.trabajoMeta.diaria)||0, metaSem = Number(DB.trabajoMeta.semanal)||0, metaMes = Number(DB.trabajoMeta.mensual)||0;
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="stats-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="stat-box"><div class="num">$${ingresosHoy.toFixed(0)}</div><div class="lbl">INGRESOS HOY</div></div>
+      <div class="stat-box"><div class="num">$${ingresosSemana.toFixed(0)}</div><div class="lbl">INGRESOS SEMANA</div></div>
+    </div>
+    ${metaDia?`<div class="hint">Meta diaria: $${metaDia} · ${Math.min(100,Math.round(ingresosHoy/metaDia*100))}% cumplido</div>`:''}
+    ${metaSem?`<div class="hint">Meta semanal: $${metaSem} · ${Math.min(100,Math.round(ingresosSemana/metaSem*100))}% cumplido</div>`:''}
+    ${metaMes?`<div class="hint">Meta mensual: $${metaMes} · ${Math.min(100,Math.round(ingresosMes/metaMes*100))}% cumplido</div>`:''}
+    <div class="stats-grid">
+      <div class="stat-box"><div class="num">$${ingresosMes.toFixed(0)}</div><div class="lbl">INGRESOS MES</div></div>
+      <div class="stat-box"><div class="num">$${porHora}</div><div class="lbl">POR HORA</div></div>
+      <div class="stat-box"><div class="num">$${gasolinaMes.toFixed(0)}</div><div class="lbl">GASOLINA MES</div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-sub">Mantenimiento pendiente hoy</div>
+    <div class="list">
+      ${mantChecklistPendientesHoy().slice(0,4).map(m=>`<div class="card row-between"><span>${escapeHtml(m.texto)}</span><span class="pill">${m.freqLabel}</span></div>`).join('') || '<div class="hint">Todo al día 👍</div>'}
+    </div>
+  `;
+}
+const PLATAFORMAS = [{v:'uber',l:'Uber'},{v:'didi',l:'DiDi'},{v:'rappi',l:'Rappi'},{v:'indrive',l:'InDrive'},{v:'otro',l:'Otro'}];
+const TURNO_FIELDS = [
+  {key:'fecha', label:'Fecha', type:'date'},
+  {key:'plataforma', label:'Plataforma', type:'select', options:PLATAFORMAS},
+  {key:'horas', label:'Horas trabajadas', type:'number', ph:'Ej. 6'},
+  {key:'viajes', label:'Viajes / pedidos realizados', type:'number', ph:'Ej. 14'},
+  {key:'ingresos', label:'Ingresos ($)', type:'number', ph:'Ej. 800'},
+  {key:'propinas', label:'Propinas ($)', type:'number', ph:'Ej. 80'},
+  {key:'gasolina', label:'Gasto en gasolina ($)', type:'number', ph:'Ej. 150'},
+  {key:'km', label:'Kilómetros recorridos', type:'number', ph:'Ej. 120'},
+  {key:'notas', label:'Notas', type:'textarea'}
+];
+function renderTrabTurnos(tabsHtml){
+  const list = DB.trabajoTurnos.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const rows = list.map(t=>`
+    <div class="card" onclick="openTurnoModal('${t.id}')" style="cursor:pointer;">
+      <div class="row-between"><b>${humanDate(t.fecha)}</b><span class="pill accent">$${Number(t.ingresos)||0}</span></div>
+      <div class="hint">${PLATAFORMAS.find(p=>p.v===t.plataforma)?.l||''} · ${t.horas||0} h · ${t.viajes||0} viajes · ${t.km||0} km · gasolina $${t.gasolina||0}${t.propinas?' · propinas $'+t.propinas:''}</div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">🚕</span>Sin turnos registrados.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+  setFab(true, ()=>openTurnoModal(null));
+}
+function openTurnoModal(id){
+  const data = id ? DB.trabajoTurnos.find(x=>x.id===id) : {fecha:todayStr(),plataforma:'uber',horas:'',viajes:'',ingresos:'',propinas:'',gasolina:'',km:'',notas:''};
+  openModal(id?'Editar turno':'Nuevo turno', entityForm(TURNO_FIELDS, data), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = async ()=>{
+        const vals = readFields(TURNO_FIELDS);
+        if(id) Object.assign(data, vals);
+        else DB.trabajoTurnos.push(Object.assign({id:uid()}, vals));
+        await persist('trabajoTurnos');
+        closeModal(); render();
+      };
+    }
+  });
+  if(id){
+    setTimeout(()=>{
+      const del=document.createElement('button');
+      del.className='btn btn-danger btn-block'; del.style.marginTop='8px'; del.textContent='Eliminar turno';
+      del.onclick=async()=>{ DB.trabajoTurnos=DB.trabajoTurnos.filter(x=>x.id!==id); await persist('trabajoTurnos'); closeModal(); render(); };
+      document.getElementById('modal-body').appendChild(del);
+    },0);
+  }
+}
+let metasDia = todayStr();
+function renderTrabMetas(tabsHtml){
+  const reg = DB.trabajoRegistro[metasDia] || {gasolina:'',km:'',sonidoRaro:false,notaSonido:'',zonaPeligrosa:'',notas:''};
+  view().innerHTML = `
+    ${tabsHtml}
+    <label class="field-label">Meta de ingresos diaria ($)</label>
+    <input type="number" id="meta-dia" value="${DB.trabajoMeta.diaria}">
+    <label class="field-label">Meta de ingresos semanal ($)</label>
+    <input type="number" id="meta-sem" value="${DB.trabajoMeta.semanal}">
+    <label class="field-label">Meta de ingresos mensual ($)</label>
+    <input type="number" id="meta-mes" value="${DB.trabajoMeta.mensual}">
+    <button class="btn btn-primary btn-block" style="margin-top:16px;" onclick="guardarMetas()">Guardar metas</button>
+
+    <div class="divider"></div>
+    <div class="section-sub">Registro rápido del día</div>
+    ${daySwitchHtmlGen('metasDia', 'changeMetasDia')}
+    <label class="field-label">Gasolina de hoy ($)</label>
+    <input type="number" id="reg-gasolina" value="${reg.gasolina}" placeholder="Ej. 100">
+    <label class="field-label">Km recorridos hoy</label>
+    <input type="number" id="reg-km" value="${reg.km}" placeholder="Ej. 90">
+    <div class="row-between" style="margin-top:14px;">
+      <span style="font-size:13px;font-weight:600;">¿Sonido raro en la moto hoy?</span>
+      <div class="toggle ${reg.sonidoRaro?'on':''}" onclick="toggleRegistroSonido()"><div class="knob"></div></div>
+    </div>
+    ${reg.sonidoRaro?`<textarea id="reg-nota-sonido" placeholder="¿Qué sonido y en qué momento?" style="margin-top:8px;">${escapeHtml(reg.notaSonido)}</textarea>`:''}
+    <label class="field-label">Lugar peligroso o incómodo donde dejaste un pedido</label>
+    <input type="text" id="reg-zona" value="${escapeHtml(reg.zonaPeligrosa)}" placeholder="Ej. Calle sin luz en...">
+    <label class="field-label">Notas generales del día</label>
+    <textarea id="reg-notas" placeholder="Cualquier cosa importante de hoy...">${escapeHtml(reg.notas)}</textarea>
+    <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="guardarRegistroDia()">Guardar registro de hoy</button>
+  `;
+}
+function daySwitchHtmlGen(varName, changeFn){
+  const val = window[varName];
+  return `<div class="day-switch">
+    <button onclick="${changeFn}(-1)">‹</button>
+    <div class="day-label">${val===todayStr()?'Hoy · ':''}${humanDate(val)}</div>
+    <button onclick="${changeFn}(1)">›</button>
+  </div>`;
+}
+function changeMetasDia(n){ metasDia = addDays(metasDia, n); render(); }
+function toggleRegistroSonido(){
+  if(!DB.trabajoRegistro[metasDia]) DB.trabajoRegistro[metasDia] = {gasolina:'',km:'',sonidoRaro:false,notaSonido:'',zonaPeligrosa:'',notas:''};
+  DB.trabajoRegistro[metasDia].sonidoRaro = !DB.trabajoRegistro[metasDia].sonidoRaro;
+  render();
+}
+async function guardarRegistroDia(){
+  DB.trabajoRegistro[metasDia] = {
+    gasolina: document.getElementById('reg-gasolina').value,
+    km: document.getElementById('reg-km').value,
+    sonidoRaro: !!(DB.trabajoRegistro[metasDia] && DB.trabajoRegistro[metasDia].sonidoRaro),
+    notaSonido: document.getElementById('reg-nota-sonido') ? document.getElementById('reg-nota-sonido').value.trim() : '',
+    zonaPeligrosa: document.getElementById('reg-zona').value.trim(),
+    notas: document.getElementById('reg-notas').value.trim()
+  };
+  await persist('trabajoRegistro');
+  alert('Registro guardado ✅');
+  render();
+}
+async function guardarMetas(){
+  DB.trabajoMeta = {diaria:document.getElementById('meta-dia').value, semanal:document.getElementById('meta-sem').value, mensual:document.getElementById('meta-mes').value};
+  await persist('trabajoMeta');
+  render();
+}
+
+/* --- Mantenimiento: checklist por frecuencia + recordatorios por kilometraje --- */
+const MANT_FIELDS = [
+  {key:'item', label:'Elemento a revisar', type:'text', ph:'Ej. Cambio de aceite'},
+  {key:'kmObjetivo', label:'Kilometraje objetivo', type:'number', ph:'Ej. 150000'},
+  {key:'notas', label:'Notas', type:'textarea'}
+];
+const MANT_FREQS = [{k:'diario',l:'Revisar cada día',ic:'☀️'},{k:'semanal',l:'Cada semana (lavado, limpieza)',ic:'🗓️'},{k:'mensual',l:'Cada mes',ic:'🔧'}];
+function mantVenceInicio(freq){
+  if(freq==='diario') return todayStr();
+  if(freq==='semanal') return inicioSemana();
+  return inicioMes();
+}
+function mantItemHecho(item, freq){ return item.lastDone && item.lastDone >= mantVenceInicio(freq); }
+function mantChecklistPendientesHoy(){
+  const out = [];
+  MANT_FREQS.forEach(f=>{
+    (DB.trabajoMantChecklist[f.k]||[]).forEach(item=>{
+      if(!mantItemHecho(item, f.k)) out.push({texto:item.texto, freqLabel:f.k});
+    });
+  });
+  return out;
+}
+function renderTrabMant(tabsHtml){
+  const checklistHtml = MANT_FREQS.map(f=>{
+    const items = DB.trabajoMantChecklist[f.k]||[];
+    const rows = items.map(it=>`
+      <div class="checkline">
+        <input type="checkbox" ${mantItemHecho(it,f.k)?'checked':''} onchange="toggleMantChecklist('${f.k}','${it.id}')">
+        <div class="txt ${mantItemHecho(it,f.k)?'done':''}">${escapeHtml(it.texto)}</div>
+        <div class="icon-btn danger" onclick="deleteMantChecklistItem('${f.k}','${it.id}')">✕</div>
+      </div>`).join('') || `<div class="hint">Sin elementos aquí todavía.</div>`;
+    return `
+      <div class="section-sub" style="margin-top:16px;">${f.ic} ${f.l}</div>
+      <div class="list">${rows}</div>
+      <div class="inline-add">
+        <input type="text" id="new-mant-${f.k}" placeholder="Agregar elemento...">
+        <button class="btn btn-primary" onclick="addMantChecklistItem('${f.k}')">Agregar</button>
+      </div>
+    `;
+  }).join('');
+
+  const rowsKm = DB.trabajoMant.map(m=>`
+    <div class="checkline">
+      <input type="checkbox" ${m.hecho?'checked':''} onchange="toggleMant('${m.id}')">
+      <div class="txt ${m.hecho?'done':''}">${escapeHtml(m.item)} ${m.kmObjetivo?`<span class="muted">· ${m.kmObjetivo} km</span>`:''}</div>
+      <div class="icon-btn danger" onclick="deleteMant('${m.id}')">✕</div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">🔧</span>Sin recordatorios por kilometraje.</div>`;
+
+  view().innerHTML = `
+    ${tabsHtml}
+    <div class="section-sub">Checklist de mantenimiento</div>
+    ${checklistHtml}
+    <div class="divider"></div>
+    <div class="section-sub">Recordatorios por kilometraje</div>
+    <div class="list">${rowsKm}</div>
+  `;
+  setFab(true, ()=>openMantModal());
+}
+async function toggleMantChecklist(freq, id){
+  const item = (DB.trabajoMantChecklist[freq]||[]).find(x=>x.id===id); if(!item) return;
+  item.lastDone = mantItemHecho(item, freq) ? '' : todayStr();
+  await persist('trabajoMantChecklist');
+  render();
+}
+async function addMantChecklistItem(freq){
+  const inp = document.getElementById('new-mant-'+freq);
+  const texto = inp.value.trim(); if(!texto) return;
+  DB.trabajoMantChecklist[freq].push({id:uid(), texto, lastDone:''});
+  await persist('trabajoMantChecklist');
+  render();
+}
+async function deleteMantChecklistItem(freq, id){
+  DB.trabajoMantChecklist[freq] = (DB.trabajoMantChecklist[freq]||[]).filter(x=>x.id!==id);
+  await persist('trabajoMantChecklist');
+  render();
+}
+function openMantModal(){
+  const data = {item:'',kmObjetivo:'',notas:''};
+  openModal('Nuevo recordatorio por kilometraje', entityForm(MANT_FIELDS, data), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = async ()=>{
+        const vals = readFields(MANT_FIELDS);
+        if(!vals.item.trim()){ alert('Escribe el elemento'); return; }
+        DB.trabajoMant.push(Object.assign({id:uid(), hecho:false}, vals));
+        await persist('trabajoMant');
+        closeModal(); render();
+      };
+    }
+  });
+}
+async function toggleMant(id){ const m=DB.trabajoMant.find(x=>x.id===id); if(m){ m.hecho=!m.hecho; await persist('trabajoMant'); render(); } }
+async function deleteMant(id){ DB.trabajoMant=DB.trabajoMant.filter(x=>x.id!==id); await persist('trabajoMant'); render(); }
+
+/* ================= RELACIONES ================= */
+const REL_TABS = [{k:'proximos',l:'Próximos'},{k:'personas',l:'Personas'},{k:'fechas',l:'Fechas importantes'},{k:'descansos',l:'Descansos'}];
+RENDERERS.relaciones = function(){
+  setTop('Relaciones', false);
+  const tabsHtml = `<div class="section-tabs">${REL_TABS.map(t=>`<button class="${state.sub===t.k?'active':''}" onclick="goto('relaciones','${t.k}')">${t.l}</button>`).join('')}</div>`;
+  if(state.sub==='proximos') renderRelProximos(tabsHtml);
+  else if(state.sub==='personas') renderRelPersonas(tabsHtml);
+  else if(state.sub==='fechas') renderRelFechas(tabsHtml);
+  else renderRelDescansos(tabsHtml);
+};
+function proximaOcurrencia(mmdd){
+  // mmdd: 'MM-DD' -> siguiente fecha en el futuro (o hoy)
+  const t = new Date();
+  const [mm,dd] = mmdd.split('-').map(Number);
+  let year = t.getFullYear();
+  let d = new Date(year, mm-1, dd);
+  if(fmtDate(d) < todayStr()) d = new Date(year+1, mm-1, dd);
+  return fmtDate(d);
+}
+function diasHasta(dateStr){
+  return Math.round((new Date(dateStr+'T00:00:00') - new Date(todayStr()+'T00:00:00'))/86400000);
+}
+function renderRelProximos(tabsHtml){
+  const items = [];
+  DB.relPersonas.forEach(p=>{
+    if(p.cumple){
+      const mmdd = p.cumple.slice(5);
+      const nd = proximaOcurrencia(mmdd);
+      items.push({titulo:`Cumpleaños de ${p.nombre}`, sub:p.relacion||'', fecha:nd, ic:'🎂'});
+    }
+  });
+  const FECHA_ICONS = {cumpleanos:'🎂',cita:'📅',aniversario:'💞',evento:'🎉',recordatorio:'📌',viaje:'✈️',pago:'💳',otro:'📌'};
+  DB.relFechas.forEach(f=>{
+    items.push({titulo:f.titulo, sub:FECHA_TIPOS.find(t=>t.v===f.tipo)?.l||f.tipo, fecha:f.fecha, ic: FECHA_ICONS[f.tipo]||'📌'});
+  });
+  DB.relDescansos.forEach(d=>{
+    if(d.fecha>=todayStr()) items.push({titulo:'Descanso'+(d.motivo?' · '+d.motivo:''), sub:d.notas||'', fecha:d.fecha, ic:'🌴'});
+  });
+  items.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const rows = items.filter(i=>i.fecha>=addDays(todayStr(),-1)).map(i=>{
+    const dd = diasHasta(i.fecha);
+    return `<div class="upcoming-item">
+      <div class="badge-days"><div class="n">${dd<=0?'Hoy':dd}</div>${dd>0?'<div class="u">DÍAS</div>':''}</div>
+      <div class="info"><div class="t">${i.ic} ${escapeHtml(i.titulo)}</div><div class="s">${escapeHtml(i.sub||'')} · ${humanDate(i.fecha)}</div></div>
+    </div>`;
+  }).join('') || `<div class="empty-state"><span class="ic">❤️</span>Agrega personas o fechas importantes para verlas aquí.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+}
+const PERSONA_FIELDS = [
+  {key:'nombre', label:'Nombre', type:'text', ph:'Ej. Mamá'},
+  {key:'relacion', label:'Relación', type:'text', ph:'Ej. Familia, pareja, amigo'},
+  {key:'telefono', label:'Teléfono', type:'text', ph:'Ej. 55 1234 5678'},
+  {key:'direccion', label:'Dirección', type:'text', ph:'Ej. Calle, número, colonia'},
+  {key:'cumple', label:'Cumpleaños', type:'date'},
+  {key:'notas', label:'Notas', type:'textarea'}
+];
+function renderRelPersonas(tabsHtml){
+  const rows = DB.relPersonas.map(p=>`
+    <div class="card row-between" onclick="openPersonaModal('${p.id}')" style="cursor:pointer;">
+      <div><b>${escapeHtml(p.nombre)}</b><div class="hint">${escapeHtml(p.relacion||'')}${p.telefono?' · 📞 '+escapeHtml(p.telefono):''}${p.cumple?' · 🎂 '+p.cumple.slice(5):''}</div></div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">👥</span>Sin personas guardadas.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+  setFab(true, ()=>openPersonaModal(null));
+}
+function openPersonaModal(id){
+  const data = id ? DB.relPersonas.find(x=>x.id===id) : {nombre:'',relacion:'',telefono:'',direccion:'',cumple:'',notas:''};
+  openModal(id?'Editar persona':'Nueva persona', entityForm(PERSONA_FIELDS, data), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = async ()=>{
+        const vals = readFields(PERSONA_FIELDS);
+        if(!vals.nombre.trim()){ alert('Escribe el nombre'); return; }
+        if(id) Object.assign(data, vals);
+        else DB.relPersonas.push(Object.assign({id:uid()}, vals));
+        await persist('relPersonas');
+        closeModal(); render();
+      };
+    }
+  });
+  if(id){
+    setTimeout(()=>{
+      const del=document.createElement('button');
+      del.className='btn btn-danger btn-block'; del.style.marginTop='8px'; del.textContent='Eliminar';
+      del.onclick=async()=>{ DB.relPersonas=DB.relPersonas.filter(x=>x.id!==id); await persist('relPersonas'); closeModal(); render(); };
+      document.getElementById('modal-body').appendChild(del);
+    },0);
+  }
+}
+const FECHA_TIPOS = [{v:'cumpleanos',l:'Cumpleaños'},{v:'cita',l:'Cita'},{v:'aniversario',l:'Aniversario'},{v:'evento',l:'Evento'},{v:'recordatorio',l:'Recordatorio'},{v:'viaje',l:'Viaje'},{v:'pago',l:'Pago / vencimiento'},{v:'otro',l:'Otro'}];
+const FECHA_FIELDS = [
+  {key:'titulo', label:'Título', type:'text', ph:'Ej. Aniversario de novios'},
+  {key:'fecha', label:'Fecha', type:'date'},
+  {key:'tipo', label:'Categoría', type:'select', options:FECHA_TIPOS}
+];
+function renderRelFechas(tabsHtml){
+  const rows = DB.relFechas.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(f=>`
+    <div class="card row-between" onclick="openFechaModal('${f.id}')" style="cursor:pointer;">
+      <div><b>${escapeHtml(f.titulo)}</b><div class="hint">${humanDate(f.fecha)} · ${FECHA_TIPOS.find(t=>t.v===f.tipo)?.l||f.tipo}</div></div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">📌</span>Sin fechas guardadas.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+  setFab(true, ()=>openFechaModal(null));
+}
+function openFechaModal(id){
+  const data = id ? DB.relFechas.find(x=>x.id===id) : {titulo:'',fecha:todayStr(),tipo:'evento'};
+  openModal(id?'Editar fecha':'Nueva fecha importante', entityForm(FECHA_FIELDS, data), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = async ()=>{
+        const vals = readFields(FECHA_FIELDS);
+        if(!vals.titulo.trim()){ alert('Ponle un título'); return; }
+        if(id) Object.assign(data, vals);
+        else DB.relFechas.push(Object.assign({id:uid()}, vals));
+        await persist('relFechas');
+        closeModal(); render();
+      };
+    }
+  });
+  if(id){
+    setTimeout(()=>{
+      const del=document.createElement('button');
+      del.className='btn btn-danger btn-block'; del.style.marginTop='8px'; del.textContent='Eliminar';
+      del.onclick=async()=>{ DB.relFechas=DB.relFechas.filter(x=>x.id!==id); await persist('relFechas'); closeModal(); render(); };
+      document.getElementById('modal-body').appendChild(del);
+    },0);
+  }
+}
+const DESCANSO_MOTIVOS = [{v:'descanso',l:'Descanso'},{v:'vacaciones',l:'Vacaciones'},{v:'personal',l:'Asunto personal'},{v:'salud',l:'Salud'},{v:'familia',l:'Familia'},{v:'otro',l:'Otro'}];
+const DESCANSO_FIELDS = [
+  {key:'fecha', label:'Desde', type:'date'},
+  {key:'fechaFin', label:'Hasta (opcional, si es más de un día)', type:'date'},
+  {key:'motivo', label:'Motivo', type:'select', options:DESCANSO_MOTIVOS},
+  {key:'notas', label:'Notas', type:'textarea'}
+];
+function renderRelDescansos(tabsHtml){
+  const rows = DB.relDescansos.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(d=>`
+    <div class="card row-between">
+      <div><b>${humanDate(d.fecha)}${d.fechaFin&&d.fechaFin!==d.fecha?' → '+humanDate(d.fechaFin):''}</b>
+        <div class="hint">${DESCANSO_MOTIVOS.find(m=>m.v===d.motivo)?.l||'Descanso'}${d.notas?' · '+escapeHtml(d.notas):''}</div>
+      </div>
+      <div class="icon-btn danger" onclick="deleteDescanso('${d.id}')">✕</div>
+    </div>`).join('') || `<div class="empty-state"><span class="ic">🌴</span>Sin descansos planeados.</div>`;
+  view().innerHTML = `${tabsHtml}<div class="list">${rows}</div>`;
+  setFab(true, ()=>openDescansoModal());
+}
+function openDescansoModal(){
+  const data = {fecha:todayStr(),fechaFin:'',motivo:'descanso',notas:''};
+  openModal('Nuevo descanso', entityForm(DESCANSO_FIELDS, data), {
+    afterRender(){
+      document.getElementById('save-entity-btn').onclick = async ()=>{
+        const vals = readFields(DESCANSO_FIELDS);
+        DB.relDescansos.push(Object.assign({id:uid()}, vals));
+        await persist('relDescansos');
+        closeModal(); render();
+      };
+    }
+  });
+}
+async function deleteDescanso(id){ DB.relDescansos=DB.relDescansos.filter(x=>x.id!==id); await persist('relDescansos'); render(); }
+
+/* ================= APPS (launcher personal) ================= */
+// Nota honesta: esta pantalla puede abrir apps que tengan un esquema de enlace
+// propio (whatsapp://, spotify:, etc.) desde dentro del wrapper. Convertir esta
+// app en el launcher real de Android (lo que se ve al prender el teléfono) es
+// una configuración del empaquetado (AndroidManifest), no algo que se pueda
+// activar solo con HTML/JS — depende de si el servicio con el que la
+// empaquetaste soporta declararla como launcher.
+function hhmmToMin(hhmm){ const [h,m] = (hhmm||'00:00').split(':').map(Number); return h*60+(m||0); }
+function fmtHora(hhmm){
+  const [h,m] = (hhmm||'00:00').split(':').map(Number);
+  const ampm = h<12 ? 'am' : 'pm';
+  const h12 = ((h%12)===0) ? 12 : h%12;
+  return `${h12}:${String(m||0).padStart(2,'0')} ${ampm}`;
+}
+function appsLockCfg(){ return DB.appsLock || {inicio:'08:00', fin:'22:00'}; }
+function appsLockWindow(){
+  const cfg = appsLockCfg();
+  const nowMin = new Date().getHours()*60 + new Date().getMinutes();
+  const ini = hhmmToMin(cfg.inicio), fin = hhmmToMin(cfg.fin);
+  if(ini === fin) return false; // horario en 0 = sin bloqueo
+  if(ini < fin) return nowMin>=ini && nowMin<fin;       // mismo día, ej. 08:00–22:00
+  return nowMin>=ini || nowMin<fin;                      // cruza medianoche, ej. 22:00–08:00
+}
+RENDERERS.apps = function(){
+  setTop('Apps', false);
+  const locked = appsLockWindow();
+  const cfg = appsLockCfg();
+  const apps = DB.apps||[];
+  const horaTxt = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  view().innerHTML = `
+    <div class="hint" style="margin:2px 0 12px;">
+      ${locked
+        ? `Son las ${horaTxt}. De ${fmtHora(cfg.inicio)} a ${fmtHora(cfg.fin)} no puedes agregar, quitar apps ni cambiar este horario — solo abrir lo que ya tienes. Se desbloquea a las ${fmtHora(cfg.fin)}.`
+        : `Son las ${horaTxt}. Puedes agregar, quitar apps o cambiar el horario ahora — se vuelve a bloquear a las ${fmtHora(cfg.inicio)}.`}
+    </div>
+    <div class="card" style="cursor:${locked?'default':'pointer'};" ${locked?'':`onclick="openLockConfigModal()"`}>
+      <div class="row" style="justify-content:space-between;">
+        <div><b>⏰ Horario bloqueado</b><div class="hint" style="margin-top:2px;">${fmtHora(cfg.inicio)} – ${fmtHora(cfg.fin)}</div></div>
+        <div class="hint" style="margin:0;">${locked?'🔒':'Editar ›'}</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="ex-grid" id="apps-grid">
+      ${apps.length ? apps.map(a=>`
+        <div class="app-card">
+          <button class="app-open" onclick="abrirApp('${a.id}')">
+            <div class="app-emoji">${escapeHtml(a.emoji||'📱')}</div>
+            <div class="app-name">${escapeHtml(a.nombre)}</div>
+          </button>
+          ${locked?'':`<button class="app-del" onclick="quitarApp('${a.id}')">✕</button>`}
+        </div>
+      `).join('') : `<div class="empty-state" style="grid-column:1/-1;"><span class="ic">📱</span>${locked?'Aún no agregas apps. Espera a que se desbloquee para agregar las primeras.':'Toca el botón + para agregar tu primera app.'}</div>`}
+    </div>
+  `;
+  setFab(!locked, ()=>openAppModal(), '+');
+};
+function abrirApp(id){
+  const a = (DB.apps||[]).find(x=>x.id===id);
+  if(!a) return;
+  if(!a.url){ alert('Esta app no tiene un enlace configurado todavía.'); return; }
+  window.location.href = a.url;
+}
+function openAppModal(){
+  if(appsLockWindow()){ alert(`No puedes agregar apps entre ${fmtHora(appsLockCfg().inicio)} y ${fmtHora(appsLockCfg().fin)}.`); return; }
+  openModal('Agregar app', `
+    <label class="field-label">Nombre</label>
+    <input type="text" id="app-nombre" placeholder="Ej. WhatsApp">
+    <label class="field-label">Emoji / ícono</label>
+    <input type="text" id="app-emoji" placeholder="📱" maxlength="4">
+    <label class="field-label">Enlace para abrirla</label>
+    <div class="hint" style="margin:-2px 0 6px;">El esquema propio de la app si lo tiene (ej. whatsapp://, spotify:, instagram://) o una página web. No todas las apps tienen uno — pruébalo después de guardar.</div>
+    <input type="text" id="app-url" placeholder="Ej. whatsapp://">
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary btn-block" id="save-app-btn">Guardar</button>
+    </div>
+  `, {afterRender(){
+    document.getElementById('save-app-btn').onclick = async ()=>{
+      if(appsLockWindow()){ alert('Se acaba de activar el bloqueo. Espera a que termine.'); closeModal(); render(); return; }
+      const nombre = document.getElementById('app-nombre').value.trim();
+      if(!nombre){ alert('Ponle un nombre a la app'); return; }
+      const emoji = document.getElementById('app-emoji').value.trim() || '📱';
+      const url = document.getElementById('app-url').value.trim();
+      DB.apps = DB.apps || [];
+      DB.apps.push({id:uid(), nombre, emoji, url});
+      await persist('apps');
+      closeModal();
+      render();
+    };
+  }});
+}
+async function quitarApp(id){
+  if(appsLockWindow()){ alert(`No puedes quitar apps entre ${fmtHora(appsLockCfg().inicio)} y ${fmtHora(appsLockCfg().fin)}.`); return; }
+  if(!confirm('¿Quitar esta app de tu lista?')) return;
+  DB.apps = (DB.apps||[]).filter(a=>a.id!==id);
+  await persist('apps');
+  render();
+}
+function openLockConfigModal(){
+  if(appsLockWindow()){ alert('El horario ya está activo — no se puede cambiar hasta que termine. Así funciona a propósito, para que no te lo saltes a medio bloqueo.'); return; }
+  const cfg = appsLockCfg();
+  openModal('Horario de bloqueo', `
+    <div class="hint" style="margin:-2px 0 10px;">Mientras este horario esté corriendo, no vas a poder agregar apps, quitarlas, ni volver a cambiar estas horas — ni siquiera para adelantarlo. Solo se edita fuera del horario.</div>
+    <label class="field-label">Empieza el bloqueo</label>
+    <input type="time" id="lock-inicio" value="${cfg.inicio}">
+    <label class="field-label">Termina el bloqueo</label>
+    <input type="time" id="lock-fin" value="${cfg.fin}">
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary btn-block" id="save-lock-btn">Guardar</button>
+    </div>
+  `, {afterRender(){
+    document.getElementById('save-lock-btn').onclick = async ()=>{
+      const inicio = document.getElementById('lock-inicio').value || '08:00';
+      const fin = document.getElementById('lock-fin').value || '22:00';
+      DB.appsLock = {inicio, fin};
+      await persist('appsLock');
+      closeModal();
+      render();
+    };
+  }});
+}
+
+
+/* ================= BOOT ================= */
+document.getElementById('modal-overlay').addEventListener('click', (e)=>{
+  if(e.target.id==='modal-overlay') closeModal();
+});
+(async function init(){
+  await loadAll();
+  const initial = {section:'personal', sub:'habitos', extra:null};
+  history.replaceState(initial, '');
+  state = initial;
+  render();
+})();
+</script>
+</body>
+</html>
