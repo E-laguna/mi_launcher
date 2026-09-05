@@ -8,9 +8,10 @@
   "theme_color": "#000000",
   "icons": [
     {
-  "src": "icon.png",
+      "src": "https://raw.githubusercontent.com/pwa-builder/pwa-starter/main/assets/icons/icon_512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
